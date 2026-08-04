@@ -134,6 +134,11 @@ function App() {
       onSave={saveNote}
       onStageChange={setWorkflowStage}
       onOpenHelper={() => setIsHelperOpen(true)}
+      onComplete={() => {
+        setConsults((current) => current.map((consult) => consult.id === selectedConsult.id ? { ...consult, status: 'Completed' } : consult))
+        setWorkflowStage('note')
+        if (isMobile) setMobileScreen('queue')
+      }}
     />
   )
 
