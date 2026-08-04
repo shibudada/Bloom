@@ -1,0 +1,1840 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Bloom design-system reference for the unified clinician workspace."
+    />
+    <title>Bloom Design System</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --background: #0b0c0f;
+        --foreground: #f4f6f7;
+        --surface: #101216;
+        --surface-raised: #15181d;
+        --surface-subtle: #1a1e24;
+        --muted: #a3aab3;
+        --muted-quiet: #767f8a;
+        --border: #252a32;
+        --border-strong: #343b46;
+        --accent: #74dba5;
+        --accent-foreground: #07110c;
+        --accent-soft: #11231b;
+        --success: #74dba5;
+        --warning: #efb449;
+        --destructive: #f47b7b;
+        --focus: #9ca9bb;
+        --sidebar: #0e1013;
+        --sidebar-selected: #191c21;
+        --overlay: rgba(5, 6, 8, 0.76);
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+        --font-sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --radius-pill: 999px;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 20px;
+        --space-6: 24px;
+        --space-8: 32px;
+        --space-10: 40px;
+        --space-12: 48px;
+        --content-max: 1180px;
+      }
+
+      html[data-theme="light"] {
+        color-scheme: light;
+        --background: #f5f6f4;
+        --foreground: #15181c;
+        --surface: #fbfcfa;
+        --surface-raised: #ffffff;
+        --surface-subtle: #eff1ed;
+        --muted: #59616b;
+        --muted-quiet: #7a838d;
+        --border: #daddd8;
+        --border-strong: #c9cdc7;
+        --accent: #197a4d;
+        --accent-foreground: #ffffff;
+        --accent-soft: #e6f2eb;
+        --success: #197a4d;
+        --warning: #a66600;
+        --destructive: #bf3f46;
+        --focus: #596b82;
+        --sidebar: #f0f1ed;
+        --sidebar-selected: #e5e7e2;
+        --overlay: rgba(30, 34, 39, 0.4);
+        --shadow: 0 24px 80px rgba(40, 45, 42, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--foreground);
+        background: var(--background);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.5;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      button,
+      a,
+      input,
+      textarea,
+      select {
+        outline: none;
+      }
+
+      :focus-visible {
+        box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--focus) !important;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.48;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        min-height: 64px;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: 0 var(--space-6);
+        background: color-mix(in srgb, var(--background) 88%, transparent);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        color: var(--accent-foreground);
+        background: var(--accent);
+        border-radius: var(--radius-md);
+        font-weight: 800;
+      }
+
+      .brand-copy strong,
+      .brand-copy span {
+        display: block;
+      }
+
+      .brand-copy strong {
+        font-size: 14px;
+        letter-spacing: -0.01em;
+      }
+
+      .brand-copy span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .header-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
+
+      .status-label {
+        padding: 5px 9px;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .layout {
+        display: grid;
+        min-height: calc(100vh - 64px);
+        grid-template-columns: 224px minmax(0, 1fr);
+      }
+
+      .side-nav {
+        position: sticky;
+        top: 64px;
+        height: calc(100vh - 64px);
+        padding: var(--space-6) var(--space-4);
+        background: var(--sidebar);
+        border-right: 1px solid var(--border);
+      }
+
+      .side-nav a {
+        display: flex;
+        min-height: 38px;
+        align-items: center;
+        padding: 0 10px;
+        color: var(--muted);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      .side-nav a:hover {
+        color: var(--foreground);
+        background: var(--surface-subtle);
+      }
+
+      .side-nav .nav-group + .nav-group {
+        margin-top: var(--space-6);
+      }
+
+      .nav-label {
+        display: block;
+        margin: 0 10px var(--space-2);
+        color: var(--muted-quiet);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      main {
+        min-width: 0;
+      }
+
+      .section {
+        padding: 72px clamp(24px, 5vw, 72px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .section-inner {
+        width: min(100%, var(--content-max));
+        margin: 0 auto;
+      }
+
+      .section-intro {
+        display: grid;
+        grid-template-columns: minmax(0, 0.72fr) minmax(280px, 0.28fr);
+        gap: var(--space-10);
+        align-items: end;
+        margin-bottom: var(--space-10);
+      }
+
+      .eyebrow {
+        display: block;
+        margin-bottom: var(--space-3);
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .section h1,
+      .section h2 {
+        max-width: 780px;
+        margin-bottom: var(--space-4);
+        letter-spacing: -0.035em;
+        line-height: 1.02;
+      }
+
+      .section h1 {
+        font-size: clamp(40px, 6vw, 76px);
+        font-weight: 760;
+      }
+
+      .section h2 {
+        font-size: clamp(30px, 4vw, 48px);
+        font-weight: 740;
+      }
+
+      .section h3 {
+        margin-bottom: var(--space-3);
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+
+      .lede {
+        max-width: 680px;
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.55;
+      }
+
+      .section-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .hero {
+        display: grid;
+        min-height: calc(100vh - 64px);
+        align-items: center;
+        background:
+          linear-gradient(115deg, transparent 62%, color-mix(in srgb, var(--accent) 6%, transparent)),
+          var(--background);
+      }
+
+      .hero .section-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 0.68fr) minmax(300px, 0.32fr);
+        gap: clamp(36px, 8vw, 120px);
+        align-items: center;
+      }
+
+      .hero h1 span {
+        color: var(--muted-quiet);
+      }
+
+      .hero-rule {
+        padding-left: var(--space-6);
+        border-left: 1px solid var(--border-strong);
+      }
+
+      .hero-rule strong {
+        display: block;
+        margin-bottom: var(--space-2);
+        font-size: 18px;
+      }
+
+      .hero-rule p {
+        margin-bottom: 0;
+        color: var(--muted);
+      }
+
+      .principles {
+        display: grid;
+        margin-top: var(--space-12);
+        border-top: 1px solid var(--border);
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .principle {
+        min-height: 148px;
+        padding: var(--space-6) var(--space-6) 0 0;
+      }
+
+      .principle + .principle {
+        padding-left: var(--space-6);
+        border-left: 1px solid var(--border);
+      }
+
+      .principle strong {
+        display: block;
+        margin-bottom: var(--space-2);
+        font-size: 15px;
+      }
+
+      .principle p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .token-grid {
+        display: grid;
+        gap: 1px;
+        overflow: hidden;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .token {
+        min-width: 0;
+        padding: var(--space-5);
+        background: var(--surface);
+      }
+
+      .swatch {
+        height: 84px;
+        margin-bottom: var(--space-4);
+        background: var(--swatch);
+        border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+        border-radius: var(--radius-md);
+      }
+
+      .token strong,
+      .token code {
+        display: block;
+      }
+
+      .token strong {
+        margin-bottom: 2px;
+        font-size: 13px;
+      }
+
+      code {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+      }
+
+      .foundation-row {
+        display: grid;
+        gap: var(--space-8);
+        margin-top: var(--space-10);
+        grid-template-columns: 1.2fr 0.8fr;
+      }
+
+      .type-scale,
+      .metric-list {
+        border-top: 1px solid var(--border);
+      }
+
+      .type-sample,
+      .metric-row {
+        display: grid;
+        min-height: 64px;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .type-sample {
+        grid-template-columns: 112px 1fr;
+      }
+
+      .type-sample code,
+      .metric-row span {
+        color: var(--muted);
+      }
+
+      .display-sample {
+        font-size: 32px;
+        font-weight: 740;
+        letter-spacing: -0.035em;
+      }
+
+      .title-sample {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .body-sample {
+        font-size: 14px;
+        font-weight: 480;
+      }
+
+      .label-sample {
+        font-size: 11px;
+        font-weight: 760;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .metric-row {
+        grid-template-columns: 1fr auto;
+      }
+
+      .metric-row strong {
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      .component-stack {
+        display: grid;
+        gap: var(--space-10);
+      }
+
+      .component-block {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: var(--space-8);
+        padding-top: var(--space-6);
+        border-top: 1px solid var(--border);
+      }
+
+      .component-description p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .component-demo {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3);
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 36px;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        padding: 0 14px;
+        color: var(--foreground);
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .button:hover {
+        background: var(--surface-subtle);
+      }
+
+      .button.primary {
+        color: var(--accent-foreground);
+        background: var(--accent);
+      }
+
+      .button.secondary {
+        background: var(--surface-subtle);
+        border-color: var(--border);
+      }
+
+      .button.outline {
+        border-color: var(--border-strong);
+      }
+
+      .button.destructive {
+        color: var(--destructive);
+        border-color: color-mix(in srgb, var(--destructive) 36%, var(--border));
+      }
+
+      .button.compact {
+        min-height: 30px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      .field-demo {
+        display: grid;
+        width: min(100%, 520px);
+        gap: var(--space-2);
+      }
+
+      .field-demo label {
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .field-demo input,
+      .field-demo textarea,
+      .field-demo select {
+        width: 100%;
+        color: var(--foreground);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+      }
+
+      .field-demo input,
+      .field-demo select {
+        min-height: 40px;
+        padding: 0 12px;
+      }
+
+      .field-demo textarea {
+        min-height: 112px;
+        padding: 11px 12px;
+        resize: vertical;
+      }
+
+      .field-help {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .tabs {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+
+      .tabs button {
+        min-height: 32px;
+        padding: 0 12px;
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .tabs button[aria-selected="true"] {
+        color: var(--foreground);
+        background: var(--surface-subtle);
+        box-shadow: inset 0 0 0 1px var(--border-strong);
+      }
+
+      .badge {
+        display: inline-flex;
+        min-height: 24px;
+        align-items: center;
+        gap: 6px;
+        padding: 0 9px;
+        color: var(--muted);
+        background: var(--surface-subtle);
+        border-radius: var(--radius-pill);
+        font-size: 11px;
+        font-weight: 750;
+      }
+
+      .badge::before {
+        width: 7px;
+        height: 7px;
+        background: currentColor;
+        border-radius: 50%;
+        content: "";
+      }
+
+      .badge.success {
+        color: var(--success);
+      }
+
+      .badge.warning {
+        color: var(--warning);
+      }
+
+      .badge.destructive {
+        color: var(--destructive);
+      }
+
+      .composition-grid {
+        display: grid;
+        gap: var(--space-6);
+        grid-template-columns: 0.72fr 1.28fr;
+      }
+
+      .composition-panel {
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+      }
+
+      .panel-heading {
+        display: flex;
+        min-height: 50px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-4);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .panel-heading strong {
+        font-size: 13px;
+      }
+
+      .patient-list {
+        display: grid;
+        gap: var(--space-2);
+        padding: var(--space-3);
+      }
+
+      .patient-row {
+        display: grid;
+        min-height: 82px;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        gap: var(--space-3);
+        align-items: start;
+        padding: var(--space-3);
+        color: var(--foreground);
+        text-align: left;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+      }
+
+      .patient-row:hover,
+      .patient-row[aria-current="true"] {
+        background: var(--sidebar-selected);
+        border-color: var(--border-strong);
+      }
+
+      .avatar {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        color: var(--foreground);
+        background: var(--surface-subtle);
+        border-radius: var(--radius-md);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .patient-row strong,
+      .patient-row small,
+      .patient-row span {
+        display: block;
+      }
+
+      .patient-row strong {
+        margin-bottom: 2px;
+        font-size: 13px;
+      }
+
+      .patient-row span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .patient-row small {
+        color: var(--muted-quiet);
+        font-size: 11px;
+      }
+
+      .task-demo {
+        padding: var(--space-6);
+      }
+
+      .task-demo-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-5);
+        margin-bottom: var(--space-6);
+      }
+
+      .task-demo-header h3 {
+        max-width: 560px;
+        margin-bottom: var(--space-2);
+        font-size: 24px;
+        letter-spacing: -0.025em;
+      }
+
+      .metadata {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .note-surface {
+        padding: var(--space-5) 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .note-surface strong {
+        display: block;
+        margin-bottom: var(--space-2);
+      }
+
+      .note-surface p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .workflow-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        margin-top: var(--space-5);
+      }
+
+      .workflow-shell {
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+      }
+
+      .workflow-toolbar {
+        display: flex;
+        min-height: 52px;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: 0 var(--space-4);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .segmented {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        background: var(--surface-subtle);
+        border-radius: var(--radius-md);
+      }
+
+      .segmented button {
+        min-height: 30px;
+        padding: 0 10px;
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        border-radius: var(--radius-sm);
+        font-size: 11px;
+        font-weight: 750;
+      }
+
+      .segmented button[aria-pressed="true"] {
+        color: var(--foreground);
+        background: var(--surface-raised);
+        box-shadow: inset 0 0 0 1px var(--border);
+      }
+
+      .desktop-preview {
+        display: grid;
+        min-height: 520px;
+        grid-template-columns: 260px minmax(420px, 1fr) minmax(300px, 360px);
+      }
+
+      .desktop-preview.copilot-hidden {
+        grid-template-columns: 260px minmax(0, 1fr) 44px;
+      }
+
+      .preview-queue,
+      .preview-task,
+      .preview-agent {
+        min-width: 0;
+        padding: var(--space-4);
+      }
+
+      .preview-queue {
+        background: var(--sidebar);
+        border-right: 1px solid var(--border);
+      }
+
+      .preview-task {
+        background: var(--surface);
+      }
+
+      .preview-agent {
+        border-left: 1px solid var(--border);
+      }
+
+      .desktop-preview.copilot-hidden .preview-agent > * {
+        display: none;
+      }
+
+      .desktop-preview.copilot-hidden .preview-agent {
+        display: grid;
+        padding: 0;
+        place-items: center;
+      }
+
+      .desktop-preview.copilot-hidden .preview-agent::after {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 750;
+        writing-mode: vertical-rl;
+        content: "Open helper";
+      }
+
+      .preview-kicker {
+        display: block;
+        margin-bottom: var(--space-3);
+        color: var(--muted-quiet);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .preview-title {
+        margin-bottom: var(--space-4);
+        font-size: 21px;
+        line-height: 1.2;
+      }
+
+      .preview-copy {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .artifact-list {
+        display: grid;
+        margin-top: var(--space-6);
+        border-top: 1px solid var(--border);
+      }
+
+      .artifact-row {
+        display: flex;
+        min-height: 48px;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .artifact-row span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .agent-composer {
+        margin-top: 250px;
+        padding: var(--space-3);
+        color: var(--muted-quiet);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+      }
+
+      .mobile-preview {
+        display: none;
+        gap: var(--space-6);
+        padding: var(--space-8);
+        background: color-mix(in srgb, var(--background) 60%, var(--surface));
+        grid-template-columns: 360px minmax(0, 1fr);
+      }
+
+      .workflow-shell.show-mobile .desktop-preview {
+        display: none;
+      }
+
+      .workflow-shell.show-mobile .mobile-preview {
+        display: grid;
+      }
+
+      .phone {
+        width: 100%;
+        max-width: 360px;
+        min-height: 640px;
+        overflow: hidden;
+        background: var(--background);
+        border: 1px solid var(--border-strong);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .phone-header {
+        display: flex;
+        min-height: 58px;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: 0 var(--space-4);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .phone-header strong {
+        font-size: 15px;
+      }
+
+      .phone-body {
+        padding: var(--space-4);
+      }
+
+      .mobile-stage {
+        display: none;
+      }
+
+      .mobile-stage.active {
+        display: block;
+        animation: stage-in 180ms ease-out both;
+      }
+
+      .mobile-stage .patient-row {
+        min-height: 92px;
+      }
+
+      .mobile-note {
+        min-height: 260px;
+        margin: var(--space-4) 0;
+        padding: var(--space-4);
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+      }
+
+      .mobile-actions {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .mobile-actions .button {
+        min-height: 46px;
+      }
+
+      .mobile-guidance {
+        align-self: center;
+      }
+
+      .mobile-guidance ol {
+        display: grid;
+        gap: var(--space-5);
+        max-width: 520px;
+        margin: var(--space-6) 0 0;
+        padding-left: 20px;
+      }
+
+      .mobile-guidance li {
+        padding-left: var(--space-2);
+        color: var(--muted);
+      }
+
+      .mobile-guidance strong {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--foreground);
+      }
+
+      .boundary-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-top: 1px solid var(--border);
+      }
+
+      .boundary-table th,
+      .boundary-table td {
+        padding: var(--space-4) 0;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .boundary-table th {
+        width: 28%;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .boundary-table td:nth-child(2) {
+        width: 22%;
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .boundary-table td:last-child {
+        color: var(--muted);
+      }
+
+      .rule-list {
+        display: grid;
+        border-top: 1px solid var(--border);
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .rule {
+        min-height: 126px;
+        padding: var(--space-6) var(--space-6) var(--space-6) 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .rule:nth-child(even) {
+        padding-left: var(--space-6);
+        border-left: 1px solid var(--border);
+      }
+
+      .rule strong {
+        display: block;
+        margin-bottom: var(--space-2);
+      }
+
+      .rule p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      @keyframes stage-in {
+        from {
+          opacity: 0;
+          transform: translateX(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @media (max-width: 1180px) {
+        .desktop-preview {
+          grid-template-columns: 220px minmax(380px, 1fr) 320px;
+        }
+
+        .desktop-preview .task-demo-header {
+          display: grid;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .side-nav {
+          display: none;
+        }
+
+        .hero .section-inner,
+        .section-intro,
+        .foundation-row,
+        .composition-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          min-height: auto;
+          padding-top: 88px;
+          padding-bottom: 88px;
+        }
+
+        .principles {
+          grid-template-columns: 1fr;
+        }
+
+        .principle,
+        .principle + .principle {
+          min-height: auto;
+          padding: var(--space-5) 0;
+          border-left: 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .token-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .component-block {
+          grid-template-columns: 1fr;
+        }
+
+        .workflow-shell:not(.show-mobile) .desktop-preview {
+          display: none;
+        }
+
+        .workflow-shell:not(.show-mobile) .mobile-preview,
+        .workflow-shell.show-mobile .mobile-preview {
+          display: grid;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .app-header {
+          min-height: 58px;
+          padding: 0 var(--space-4);
+        }
+
+        .brand-copy span,
+        .status-label {
+          display: none;
+        }
+
+        .section {
+          padding: 56px var(--space-5);
+        }
+
+        .hero {
+          min-height: calc(100svh - 58px);
+          padding-top: 56px;
+          padding-bottom: 56px;
+        }
+
+        .hero .section-inner {
+          gap: var(--space-10);
+        }
+
+        .hero h1 {
+          font-size: clamp(42px, 14vw, 62px);
+        }
+
+        .token-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .component-demo {
+          align-items: stretch;
+        }
+
+        .component-demo .button {
+          flex: 1 1 auto;
+        }
+
+        .task-demo-header {
+          display: grid;
+        }
+
+        .mobile-preview {
+          padding: var(--space-4);
+          grid-template-columns: 1fr;
+        }
+
+        .phone {
+          margin: 0 auto;
+        }
+
+        .mobile-guidance {
+          padding: var(--space-4) 0;
+        }
+
+        .workflow-toolbar {
+          align-items: flex-start;
+          padding: var(--space-3);
+        }
+
+        .workflow-toolbar > strong {
+          padding-top: 6px;
+        }
+
+        .segmented {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .boundary-table,
+        .boundary-table tbody,
+        .boundary-table tr,
+        .boundary-table th,
+        .boundary-table td {
+          display: block;
+          width: 100%;
+        }
+
+        .boundary-table tr {
+          padding: var(--space-5) 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .boundary-table th,
+        .boundary-table td {
+          padding: 2px 0;
+          border: 0;
+        }
+
+        .rule-list {
+          grid-template-columns: 1fr;
+        }
+
+        .rule,
+        .rule:nth-child(even) {
+          min-height: auto;
+          padding: var(--space-5) 0;
+          border-left: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        .mobile-stage.active {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand" aria-label="Bloom design system">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span class="brand-copy">
+          <strong>Bloom Design System</strong>
+          <span>Clinician workspace reference</span>
+        </span>
+      </div>
+      <div class="header-meta">
+        <span class="status-label">Proposed · v0.1</span>
+        <button class="button outline compact" id="theme-toggle" type="button">
+          Light theme
+        </button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="side-nav" aria-label="Design-system sections">
+        <div class="nav-group">
+          <span class="nav-label">System</span>
+          <a href="#overview">Overview</a>
+          <a href="#foundations">Foundations</a>
+          <a href="#components">Components</a>
+          <a href="#compositions">Compositions</a>
+        </div>
+        <div class="nav-group">
+          <span class="nav-label">Experience</span>
+          <a href="#responsive">Desktop &amp; mobile</a>
+          <a href="#boundary">COSS boundary</a>
+          <a href="#rules">Usage rules</a>
+        </div>
+      </aside>
+
+      <main>
+        <section class="section hero" id="overview">
+          <div class="section-inner">
+            <div>
+              <span class="eyebrow">Unified direction</span>
+              <h1>Clinical work first. <span>Assistance when useful.</span></h1>
+              <p class="lede">
+                A calm, task-focused system for reviewing a patient, completing the note,
+                generating the AVS, and prescribing through Photon.
+              </p>
+              <div class="principles">
+                <div class="principle">
+                  <strong>Task before agent</strong>
+                  <p>The patient and required clinical actions own the primary workspace.</p>
+                </div>
+                <div class="principle">
+                  <strong>Neutral navigation</strong>
+                  <p>Green communicates success or connected state—not ordinary selection.</p>
+                </div>
+                <div class="principle">
+                  <strong>Responsive by structure</strong>
+                  <p>Desktop uses coordinated panels; mobile uses a screen-by-screen flow.</p>
+                </div>
+              </div>
+            </div>
+            <aside class="hero-rule">
+              <strong>Reference, not production package</strong>
+              <p>
+                This file shows the proposed visual and interaction contract before COSS
+                primitives are installed into the React prototype.
+              </p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="section" id="foundations">
+          <div class="section-inner">
+            <div class="section-intro">
+              <div>
+                <span class="eyebrow">Foundations</span>
+                <h2>Semantic before decorative.</h2>
+              </div>
+              <p class="section-note">
+                One neutral ladder, one action accent, and explicit clinical state colors.
+                Light and dark themes keep the same relationships.
+              </p>
+            </div>
+
+            <div class="token-grid" aria-label="Semantic color tokens">
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--background)"></div>
+                <strong>Background</strong>
+                <code>--background</code>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--surface)"></div>
+                <strong>Surface</strong>
+                <code>--surface</code>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--surface-subtle)"></div>
+                <strong>Subtle surface</strong>
+                <code>--surface-subtle</code>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--foreground)"></div>
+                <strong>Foreground</strong>
+                <code>--foreground</code>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--muted)"></div>
+                <strong>Muted foreground</strong>
+                <code>--muted</code>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--accent)"></div>
+                <strong>Primary action</strong>
+                <code>--accent</code>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--warning)"></div>
+                <strong>Needs attention</strong>
+                <code>--warning</code>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--destructive)"></div>
+                <strong>Destructive</strong>
+                <code>--destructive</code>
+              </div>
+            </div>
+
+            <div class="foundation-row">
+              <div>
+                <h3>Type scale</h3>
+                <div class="type-scale">
+                  <div class="type-sample">
+                    <code>Display / 32</code>
+                    <span class="display-sample">Patient work, clearly framed</span>
+                  </div>
+                  <div class="type-sample">
+                    <code>Title / 22</code>
+                    <span class="title-sample">Start estradiol patch</span>
+                  </div>
+                  <div class="type-sample">
+                    <code>Body / 14</code>
+                    <span class="body-sample">Dense enough for clinical work, never compressed.</span>
+                  </div>
+                  <div class="type-sample">
+                    <code>Label / 11</code>
+                    <span class="label-sample">Needs review</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3>System metrics</h3>
+                <div class="metric-list">
+                  <div class="metric-row"><span>Base spacing</span><strong>4px</strong></div>
+                  <div class="metric-row"><span>Control height</span><strong>36–40px</strong></div>
+                  <div class="metric-row"><span>Mobile action</span><strong>46px</strong></div>
+                  <div class="metric-row"><span>Control radius</span><strong>8px</strong></div>
+                  <div class="metric-row"><span>Panel radius</span><strong>12px</strong></div>
+                  <div class="metric-row"><span>Panel border</span><strong>1px</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="components">
+          <div class="section-inner">
+            <div class="section-intro">
+              <div>
+                <span class="eyebrow">Components</span>
+                <h2>Small primitives with complete behavior.</h2>
+              </div>
+              <p class="section-note">
+                These are visual contracts for COSS-backed controls. Bloom should not maintain
+                parallel button, tab, popover, field, or focus systems.
+              </p>
+            </div>
+
+            <div class="component-stack">
+              <div class="component-block">
+                <div class="component-description">
+                  <h3>Buttons</h3>
+                  <p>Use one primary action per decision area. Ghost and outline remain neutral.</p>
+                </div>
+                <div class="component-demo">
+                  <button class="button primary" type="button">Generate AVS</button>
+                  <button class="button secondary" type="button">Save note</button>
+                  <button class="button outline" type="button">Review prescription</button>
+                  <button class="button" type="button">Cancel</button>
+                  <button class="button destructive" type="button">Discard draft</button>
+                  <button class="button secondary" type="button" disabled>Send prescription</button>
+                </div>
+              </div>
+
+              <div class="component-block">
+                <div class="component-description">
+                  <h3>Tabs</h3>
+                  <p>Selected state is neutral and structural. Tabs expose actual tab semantics.</p>
+                </div>
+                <div class="component-demo">
+                  <div class="tabs" role="tablist" aria-label="Example patient sections">
+                    <button role="tab" aria-selected="true" type="button">Request</button>
+                    <button role="tab" aria-selected="false" type="button">Medications</button>
+                    <button role="tab" aria-selected="false" type="button">Labs</button>
+                    <button role="tab" aria-selected="false" type="button">Timeline</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="component-block">
+                <div class="component-description">
+                  <h3>Clinical states</h3>
+                  <p>Color supports text; it never carries the meaning alone.</p>
+                </div>
+                <div class="component-demo">
+                  <span class="badge success">Ready</span>
+                  <span class="badge warning">Needs review</span>
+                  <span class="badge destructive">Safety concern</span>
+                  <span class="badge">Draft</span>
+                </div>
+              </div>
+
+              <div class="component-block">
+                <div class="component-description">
+                  <h3>Fields</h3>
+                  <p>Visible labels, stable focus rings, and help text remain part of the component.</p>
+                </div>
+                <div class="field-demo">
+                  <label for="request-title">Request title</label>
+                  <input id="request-title" value="Start estradiol patch for vasomotor symptoms" />
+                  <span class="field-help">Editable clinician-facing title</span>
+                  <label for="clinical-note">Clinical note</label>
+                  <textarea id="clinical-note">Subjective&#10;Patient reports hot flashes and night sweats affecting sleep.</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="compositions">
+          <div class="section-inner">
+            <div class="section-intro">
+              <div>
+                <span class="eyebrow">Bloom compositions</span>
+                <h2>Clinical meaning stays product-owned.</h2>
+              </div>
+              <p class="section-note">
+                COSS supplies reliable primitives. Bloom owns the patient row, request editor,
+                encounter artifacts, and prescribing task composition.
+              </p>
+            </div>
+
+            <div class="composition-grid">
+              <section class="composition-panel" aria-label="Patient queue composition">
+                <div class="panel-heading">
+                  <strong>Needs review</strong>
+                  <span class="badge warning">3 patients</span>
+                </div>
+                <div class="patient-list">
+                  <button class="patient-row" aria-current="true" type="button">
+                    <span class="avatar">MP</span>
+                    <span>
+                      <strong>Maya Patel</strong>
+                      <span>Start estradiol patch for vasomotor symptoms</span>
+                    </span>
+                    <small>42 min</small>
+                  </button>
+                  <button class="patient-row" type="button">
+                    <span class="avatar">EM</span>
+                    <span>
+                      <strong>Elena Morales</strong>
+                      <span>Bleeding after restarting hormone therapy</span>
+                    </span>
+                    <small>2 hr</small>
+                  </button>
+                  <button class="patient-row" type="button">
+                    <span class="avatar">TB</span>
+                    <span>
+                      <strong>Talia Brooks</strong>
+                      <span>Sleep disruption and mood changes</span>
+                    </span>
+                    <small>21 hr</small>
+                  </button>
+                </div>
+              </section>
+
+              <section class="composition-panel" aria-label="Clinical task composition">
+                <div class="panel-heading">
+                  <strong>Maya Patel</strong>
+                  <span class="badge">Draft ready</span>
+                </div>
+                <div class="task-demo">
+                  <div class="task-demo-header">
+                    <div>
+                      <h3>Start estradiol patch for vasomotor symptoms</h3>
+                      <div class="metadata">
+                        <span>52F</span><span>Late perimenopause</span><span>Uterus intact</span>
+                      </div>
+                    </div>
+                    <button class="button secondary compact" type="button">Save note</button>
+                  </div>
+                  <div class="note-surface">
+                    <strong>Subjective</strong>
+                    <p>
+                      Patient requests treatment for hot flashes and night sweats disrupting
+                      sleep 5–6 nights per week. Safety screen is ready for clinician review.
+                    </p>
+                  </div>
+                  <div class="workflow-actions">
+                    <button class="button primary" type="button">Generate AVS</button>
+                    <button class="button secondary" type="button">Review prescription</button>
+                    <button class="button" type="button">Open helper</button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="responsive">
+          <div class="section-inner">
+            <div class="section-intro">
+              <div>
+                <span class="eyebrow">Responsive experience</span>
+                <h2>Panels on desktop. Tasks on mobile.</h2>
+              </div>
+              <p class="section-note">
+                Mobile is not a stacked desktop layout. The patient list, note task, and
+                prescription review become separate screens with a persistent task sequence.
+              </p>
+            </div>
+
+            <div class="workflow-shell" id="workflow-shell">
+              <div class="workflow-toolbar">
+                <strong>Experience preview</strong>
+                <div class="segmented" aria-label="Preview controls">
+                  <button id="show-desktop" aria-pressed="true" type="button">Desktop</button>
+                  <button id="show-mobile" aria-pressed="false" type="button">Mobile</button>
+                  <button id="toggle-copilot" aria-pressed="false" type="button">Hide helper</button>
+                </div>
+              </div>
+
+              <div class="desktop-preview" id="desktop-preview">
+                <aside class="preview-queue">
+                  <span class="preview-kicker">Patient queue</span>
+                  <div class="patient-list" style="padding: 0">
+                    <button class="patient-row" aria-current="true" type="button">
+                      <span class="avatar">MP</span>
+                      <span><strong>Maya Patel</strong><span>HRT initiation</span></span>
+                      <small>42m</small>
+                    </button>
+                    <button class="patient-row" type="button">
+                      <span class="avatar">EM</span>
+                      <span><strong>Elena Morales</strong><span>Safety review</span></span>
+                      <small>2h</small>
+                    </button>
+                  </div>
+                </aside>
+                <section class="preview-task">
+                  <span class="preview-kicker">Patient task</span>
+                  <h3 class="preview-title">Start estradiol patch for vasomotor symptoms</h3>
+                  <p class="preview-copy">
+                    Complete the note, review generated patient materials, then prescribe.
+                  </p>
+                  <div class="note-surface">
+                    <strong>Clinical note</strong>
+                    <p>AI-drafted content remains directly editable by the clinician.</p>
+                  </div>
+                  <div class="artifact-list">
+                    <div class="artifact-row"><strong>After Visit Summary</strong><span>Ready</span></div>
+                    <div class="artifact-row"><strong>Follow-up instructions</strong><span>Ready</span></div>
+                    <div class="artifact-row"><strong>Medication summary</strong><span>Review</span></div>
+                  </div>
+                  <div class="workflow-actions">
+                    <button class="button secondary" type="button">Save note</button>
+                    <button class="button primary" type="button">Continue to Photon</button>
+                  </div>
+                </section>
+                <aside class="preview-agent">
+                  <span class="preview-kicker">Optional helper</span>
+                  <p class="preview-copy">Ask for a revision, safety summary, or alternate plan.</p>
+                  <div class="agent-composer">Ask Bloom</div>
+                </aside>
+              </div>
+
+              <div class="mobile-preview">
+                <div class="phone" aria-label="Mobile workflow preview">
+                  <div class="mobile-stage active" data-mobile-stage="queue">
+                    <div class="phone-header"><strong>Patients</strong><span class="badge warning">3</span></div>
+                    <div class="phone-body patient-list" style="padding: 12px">
+                      <button class="patient-row mobile-patient-open" type="button">
+                        <span class="avatar">MP</span>
+                        <span><strong>Maya Patel</strong><span>HRT initiation · Draft ready</span></span>
+                        <small>42m</small>
+                      </button>
+                      <button class="patient-row" type="button">
+                        <span class="avatar">EM</span>
+                        <span><strong>Elena Morales</strong><span>Safety review · In review</span></span>
+                        <small>2h</small>
+                      </button>
+                      <button class="patient-row" type="button">
+                        <span class="avatar">TB</span>
+                        <span><strong>Talia Brooks</strong><span>Plan review · In review</span></span>
+                        <small>21h</small>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mobile-stage" data-mobile-stage="task">
+                    <div class="phone-header">
+                      <button class="button compact mobile-back" type="button">Patients</button>
+                      <strong>Maya Patel</strong>
+                      <span class="badge">Draft</span>
+                    </div>
+                    <div class="phone-body">
+                      <span class="preview-kicker">Patient task</span>
+                      <h3 class="preview-title">Start estradiol patch</h3>
+                      <div class="metadata"><span>52F</span><span>Uterus intact</span></div>
+                      <div class="mobile-note">
+                        <strong>Subjective</strong><br />
+                        Hot flashes and night sweats are disrupting sleep 5–6 nights per week.
+                        Draft remains directly editable.
+                      </div>
+                      <div class="mobile-actions">
+                        <button class="button secondary" type="button">Save note</button>
+                        <button class="button primary mobile-review-open" type="button">Generate AVS</button>
+                        <button class="button" type="button">Ask helper</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mobile-stage" data-mobile-stage="review">
+                    <div class="phone-header">
+                      <button class="button compact mobile-task-back" type="button">Note</button>
+                      <strong>Review &amp; prescribe</strong>
+                      <span></span>
+                    </div>
+                    <div class="phone-body">
+                      <div class="artifact-list" style="margin-top: 0">
+                        <div class="artifact-row"><strong>AVS</strong><span>Ready</span></div>
+                        <div class="artifact-row"><strong>Follow-up</strong><span>Ready</span></div>
+                        <div class="artifact-row"><strong>Prescription</strong><span>Review</span></div>
+                      </div>
+                      <div class="mobile-note" style="min-height: 180px">
+                        <strong>Prescription candidate</strong><br /><br />
+                        Estradiol patch 0.0375 mg twice weekly plus progesterone 100 mg nightly.
+                      </div>
+                      <div class="mobile-actions">
+                        <button class="button primary" type="button">Continue in Photon</button>
+                        <button class="button secondary" type="button">Return to note</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mobile-guidance">
+                  <span class="eyebrow">Mobile information architecture</span>
+                  <h3 class="title-sample">One screen, one clinical decision.</h3>
+                  <ol>
+                    <li><strong>Choose the patient.</strong>The queue is its own navigable screen.</li>
+                    <li><strong>Complete the task.</strong>The note and AVS remain primary; helper actions are optional.</li>
+                    <li><strong>Review and prescribe.</strong>Photon is the final focused transition, not a permanently visible panel.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="boundary">
+          <div class="section-inner">
+            <div class="section-intro">
+              <div>
+                <span class="eyebrow">COSS boundary</span>
+                <h2>Own the clinical composition, not the primitive.</h2>
+              </div>
+              <p class="section-note">
+                COSS should provide accessibility, keyboard behavior, overlays, and control
+                states. Bloom should provide clinical meaning and workflow.
+              </p>
+            </div>
+
+            <table class="boundary-table">
+              <thead>
+                <tr><th>Area</th><th>Owner</th><th>Contract</th></tr>
+              </thead>
+              <tbody>
+                <tr><th>Button, icon button</th><td>COSS</td><td>Size, focus, disabled, destructive, loading</td></tr>
+                <tr><th>Tabs, toggle group</th><td>COSS</td><td>Selection semantics and keyboard behavior</td></tr>
+                <tr><th>Popover, menu, tooltip</th><td>COSS</td><td>Positioning, dismissal, focus, portal layering</td></tr>
+                <tr><th>Field, input, textarea, select</th><td>COSS</td><td>Labels, errors, focus, disabled and readonly states</td></tr>
+                <tr><th>Sheet, drawer, scroll area</th><td>COSS</td><td>Responsive overlays, focus trapping, stable scrolling</td></tr>
+                <tr><th>Patient queue row</th><td>Bloom</td><td>Clinical urgency, wait time, request and review state</td></tr>
+                <tr><th>Request editor</th><td>Bloom</td><td>Note, artifacts, completion sequence and authorship</td></tr>
+                <tr><th>Prescription review</th><td>Bloom + Photon</td><td>Candidate review and clinician-mediated transmission</td></tr>
+                <tr><th>Optional helper</th><td>Bloom</td><td>Assistance without owning the primary mobile workflow</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="section" id="rules">
+          <div class="section-inner">
+            <div class="section-intro">
+              <div>
+                <span class="eyebrow">Usage rules</span>
+                <h2>Constraints that keep the system calm.</h2>
+              </div>
+              <p class="section-note">These rules are the acceptance criteria for the implementation pass.</p>
+            </div>
+
+            <div class="rule-list">
+              <div class="rule"><strong>Do not color ordinary selection green.</strong><p>Use neutral selected surfaces. Reserve green for success, readiness, or connected state.</p></div>
+              <div class="rule"><strong>Do not stack desktop panels on mobile.</strong><p>Convert the queue, patient task, and prescription review into routed or stateful screens.</p></div>
+              <div class="rule"><strong>Do not ship clickable dead ends.</strong><p>Implement the local prototype behavior, disable with clear reason, or remove the control.</p></div>
+              <div class="rule"><strong>Do not remove focus without replacement.</strong><p>Every interactive element receives a consistent visible focus ring.</p></div>
+              <div class="rule"><strong>Do not make the helper the task.</strong><p>The agent supports note and plan work; it does not displace the patient's clinical workflow.</p></div>
+              <div class="rule"><strong>Do not create a parallel primitive library.</strong><p>Use COSS behavior and semantic tokens; keep customization in Bloom compositions.</p></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const themeToggle = document.querySelector("#theme-toggle");
+      const workflowShell = document.querySelector("#workflow-shell");
+      const desktopPreview = document.querySelector("#desktop-preview");
+      const showDesktop = document.querySelector("#show-desktop");
+      const showMobile = document.querySelector("#show-mobile");
+      const toggleCopilot = document.querySelector("#toggle-copilot");
+      const mobileStages = Array.from(document.querySelectorAll("[data-mobile-stage]"));
+
+      function setTheme(theme) {
+        root.dataset.theme = theme;
+        themeToggle.textContent = theme === "dark" ? "Light theme" : "Dark theme";
+      }
+
+      function setExperiencePreview(mode) {
+        const isMobile = mode === "mobile";
+        workflowShell.classList.toggle("show-mobile", isMobile);
+        showDesktop.setAttribute("aria-pressed", String(!isMobile));
+        showMobile.setAttribute("aria-pressed", String(isMobile));
+        toggleCopilot.hidden = isMobile;
+      }
+
+      function setMobileStage(stage) {
+        mobileStages.forEach((element) => {
+          element.classList.toggle("active", element.dataset.mobileStage === stage);
+        });
+      }
+
+      themeToggle.addEventListener("click", () => {
+        setTheme(root.dataset.theme === "dark" ? "light" : "dark");
+      });
+
+      showDesktop.addEventListener("click", () => setExperiencePreview("desktop"));
+      showMobile.addEventListener("click", () => setExperiencePreview("mobile"));
+
+      toggleCopilot.addEventListener("click", () => {
+        const isHidden = desktopPreview.classList.toggle("copilot-hidden");
+        toggleCopilot.setAttribute("aria-pressed", String(isHidden));
+        toggleCopilot.textContent = isHidden ? "Show helper" : "Hide helper";
+      });
+
+      document.querySelector(".mobile-patient-open").addEventListener("click", () => setMobileStage("task"));
+      document.querySelector(".mobile-back").addEventListener("click", () => setMobileStage("queue"));
+      document.querySelector(".mobile-review-open").addEventListener("click", () => setMobileStage("review"));
+      document.querySelector(".mobile-task-back").addEventListener("click", () => setMobileStage("task"));
+    </script>
+  </body>
+</html>
