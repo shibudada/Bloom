@@ -1,14 +1,4 @@
-import type { ChartTab, Consult } from '../types'
-
-export const chartTabs: ChartTab[] = [
-  'Request',
-  'Conditions',
-  'Labs',
-  'Medications',
-  'Notes',
-  'Procedures',
-  'Vitals',
-]
+import type { Consult } from '../types'
 
 export const consultsSeed: Consult[] = [
   {

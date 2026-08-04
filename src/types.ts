@@ -1,24 +1,4 @@
 export type ThemeMode = 'dark' | 'light'
-export type ThemePreference = 'system' | ThemeMode
-export type AppearanceContrast = 'high' | 'system-medium' | 'soft-clinical'
-
-export type ChartTab =
-  | 'Request'
-  | 'Conditions'
-  | 'Labs'
-  | 'Medications'
-  | 'Notes'
-  | 'Procedures'
-  | 'Vitals'
-
-export type CopilotTab =
-  | 'Copilot'
-  | 'Follow-ups'
-  | 'Internal Notes'
-  | 'Chat History'
-  | 'Prescription Console'
-
-export type RxDrawerMode = 'collapsed' | 'review' | 'full'
 
 export type ConsultStatus = 'New' | 'In review' | 'Draft ready' | 'Signed' | 'Completed'
 

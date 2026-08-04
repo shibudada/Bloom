@@ -1,6 +1,6 @@
 import type { AgentActionResponse, AgentActionType, Consult } from '../types'
 
-const API_BASE_URL = import.meta.env.VITE_BLOOM_API_BASE_URL ?? 'http://127.0.0.1:8787'
+const API_BASE_URL = import.meta.env.VITE_BLOOM_API_BASE_URL ?? ''
 
 export interface AgentClient {
   createActionCard(input: {
