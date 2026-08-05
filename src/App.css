@@ -1,19 +1,22 @@
 #root { height: 100dvh; }
 
-.bloom-desktop-shell { display: grid; height: 100dvh; grid-template-rows: minmax(0, 1fr); grid-template-columns: var(--queue-width, 288px) 7px minmax(0, 1fr) 7px var(--helper-width, 344px); overflow: hidden; background: var(--background); color: var(--foreground); }
-.bloom-desktop-shell.helper-closed { grid-template-columns: var(--queue-width, 288px) 7px minmax(0, 1fr); }
-.bloom-desktop-shell.queue-closed.helper-open { grid-template-columns: minmax(0, 1fr) 7px var(--helper-width, 344px); }
+.bloom-desktop-shell { display: grid; height: 100dvh; grid-template-rows: minmax(0, 1fr); grid-template-columns: var(--queue-width, 288px) 1px minmax(0, 1fr) 1px var(--helper-width, 344px); overflow: hidden; background: var(--background); color: var(--foreground); }
+.bloom-desktop-shell.helper-closed { grid-template-columns: var(--queue-width, 288px) 1px minmax(0, 1fr); }
+.bloom-desktop-shell.queue-closed.helper-open { grid-template-columns: minmax(0, 1fr) 1px var(--helper-width, 344px); }
 .bloom-desktop-shell.queue-closed.helper-closed { grid-template-columns: minmax(0, 1fr); }
 .bloom-mobile-shell { height: 100dvh; background: var(--background); color: var(--foreground); }
 body.is-resizing { cursor: col-resize; user-select: none; }
-.panel-resizer { position: relative; z-index: 4; display: grid; width: 7px; height: 100%; place-items: center; padding: 0; color: transparent; background: transparent; border: 0; cursor: col-resize; }
-.panel-resizer::before { content: ''; position: absolute; inset: 0 3px; background: var(--border); transition: background 120ms ease; }
+.panel-resizer { position: relative; z-index: 4; display: grid; width: 1px; height: 100%; place-items: center; padding: 0; color: transparent; background: transparent; border: 0; cursor: col-resize; }
+.panel-resizer::before { content: ''; position: absolute; inset: 0; background: var(--border); transition: background 120ms ease; }
+.panel-resizer::after { content: ''; position: absolute; inset: 0 -4px; }
 .panel-resizer:hover::before, .panel-resizer:focus-visible::before { background: var(--ring); }
 .panel-resizer svg { width: 12px; }
 
 .section-kicker { color: var(--muted-foreground); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .bloom-primary-action { background: #57cf92 !important; color: #07110c !important; }
 .bloom-primary-action:hover { background: #6cdaa2 !important; }
+.bloom-primary-action[data-loading] { color: transparent !important; }
+.bloom-primary-action[data-loading] [data-slot=button-loading-indicator] { color: #07110c; }
 .spin { animation: bloom-spin 800ms linear infinite; }
 @keyframes bloom-spin { to { transform: rotate(360deg); } }
 
@@ -75,8 +78,8 @@ body.is-resizing { cursor: col-resize; user-select: none; }
 .request-heading-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: start; }
 .request-heading-copy { min-width: 0; }
 .request-heading-actions { display: inline-flex; align-items: center; gap: 8px; }
-.request-heading-actions [data-slot=button] { min-width: 72px; }
-.request-heading-actions .bloom-primary-action { min-width: 138px; }
+.request-heading-actions [data-slot=button] { min-width: 58px; }
+.request-heading-actions .bloom-primary-action { min-width: 118px; }
 .request-task-canvas { padding-top: 18px; padding-bottom: 28px; }
 .clinical-tabs { gap: 20px; }
 .note-editor-block { padding-top: 0; }
@@ -182,6 +185,13 @@ body.is-resizing { cursor: col-resize; user-select: none; }
 .helper-close-toggle { position: fixed; z-index: 5; top: 14px; right: 14px; }
 .mobile-helper-sheet { max-height: 78dvh; border-radius: 18px 18px 0 0; }
 .utility-panel-scroll { height: 100%; }
+.bloom-desktop-shell [data-slot=scroll-area-scrollbar] { margin: 0; }
+.bloom-desktop-shell [data-slot=scroll-area-scrollbar][data-orientation=vertical] { width: 3px; }
+.bloom-desktop-shell [data-slot=scroll-area-scrollbar][data-orientation=horizontal] { height: 3px; }
+.bloom-desktop-shell * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--foreground) 20%, transparent) transparent; }
+.bloom-desktop-shell *::-webkit-scrollbar { width: 3px; height: 3px; }
+.bloom-desktop-shell *::-webkit-scrollbar-track { background: transparent; }
+.bloom-desktop-shell *::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--foreground) 20%, transparent); border-radius: 999px; }
 .chat-history-list { display: grid; gap: 0; padding: 8px 16px 24px; }
 .chat-history-list article { padding: 16px 4px; border-bottom: 1px solid var(--sidebar-border); }
 .chat-history-list article > div { display: flex; justify-content: space-between; gap: 12px; }

@@ -154,7 +154,7 @@ export function ClinicalTaskWorkspace({
                       <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
                     </div>
                   </div>
-                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" onClick={onSave}>Save</Button><Button className="bloom-primary-action" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check /> Completed</> : 'Save and Complete'}</Button></div> : null}
+                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button className="bloom-primary-action" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
                 </div>
               </section>
               <section className={isMobile ? 'note-editor-block mobile-note-editor' : 'note-editor-block'}>
