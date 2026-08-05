@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetDescription, SheetHeader, SheetPanel, SheetPopup, SheetTitle } from '@/components/ui/sheet'
+import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import type { AgentActionType, Consult } from '@/types'
 
 export function ClinicalHelper({
@@ -16,6 +17,7 @@ export function ClinicalHelper({
   runningAction,
   onOpenChange,
   onRequestAction,
+  onOpenPrescription,
 }: {
   consult: Consult
   error: string | null
@@ -24,8 +26,10 @@ export function ClinicalHelper({
   runningAction: AgentActionType | null
   onOpenChange: (open: boolean) => void
   onRequestAction: (action: AgentActionType, prompt?: string) => void
+  onOpenPrescription?: () => void
 }) {
   const [prompt, setPrompt] = useState('')
+  const [desktopTab, setDesktopTab] = useState<'copilot' | 'chat' | 'prescription'>('copilot')
   const content = (
     <HelperContent consult={consult} error={error} prompt={prompt} runningAction={runningAction} onPromptChange={setPrompt} onRequestAction={onRequestAction} />
   )
@@ -41,7 +45,43 @@ export function ClinicalHelper({
     )
   }
 
-  return <aside className="clinical-helper" aria-label="Clinical helper">{content}</aside>
+  return (
+    <aside className="clinical-helper" aria-label="Clinical utility sidebar">
+      <Tabs value={desktopTab} onValueChange={(value) => setDesktopTab(value as typeof desktopTab)} className="utility-tabs">
+        <TabsList aria-label="Clinical utility sections">
+          <TabsTab value="copilot">Copilot</TabsTab>
+          <TabsTab value="chat">Chat history</TabsTab>
+          <TabsTab value="prescription">Prescription console</TabsTab>
+        </TabsList>
+        <TabsPanel value="copilot">{content}</TabsPanel>
+        <TabsPanel value="chat"><ChatHistory consult={consult} /></TabsPanel>
+        <TabsPanel value="prescription"><PrescriptionConsole consult={consult} onOpenPrescription={onOpenPrescription} /></TabsPanel>
+      </Tabs>
+    </aside>
+  )
+}
+
+function ChatHistory({ consult }: { consult: Consult }) {
+  return (
+    <ScrollArea className="utility-panel-scroll" scrollFade>
+      <div className="chat-history-list">
+        {consult.chat.map((message) => <article key={message.id}><div><strong>{message.name}</strong><span>{message.time}</span></div>{message.body.map((line) => <p key={line}>{line}</p>)}</article>)}
+      </div>
+    </ScrollArea>
+  )
+}
+
+function PrescriptionConsole({ consult, onOpenPrescription }: { consult: Consult; onOpenPrescription?: () => void }) {
+  const order = consult.draftOrder
+  return (
+    <ScrollArea className="utility-panel-scroll" scrollFade>
+      <section className="prescription-console">
+        <div><span className="section-kicker">Draft order</span><h2>{order.medication}</h2><p>{order.sig}</p></div>
+        <dl><dt>Quantity</dt><dd>{order.quantity}</dd><dt>Refills</dt><dd>{order.refills}</dd><dt>Days supply</dt><dd>{order.daysSupply}</dd><dt>Pharmacy</dt><dd>{order.pharmacy}</dd><dt>Substitutions</dt><dd>{order.substitutions}</dd></dl>
+        <Button className="bloom-primary-action" onClick={onOpenPrescription} disabled={!onOpenPrescription}><Pill /> Open prescribe</Button>
+      </section>
+    </ScrollArea>
+  )
 }
 
 function HelperContent({ consult, error, prompt, runningAction, onPromptChange, onRequestAction }: {

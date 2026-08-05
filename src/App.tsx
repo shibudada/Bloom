@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { useEffect, useMemo, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import { GripVertical, PanelRightClose, PanelRightOpen } from 'lucide-react'
 
 import { agentClient } from '@/agent/client'
 import { ClinicalHelper } from '@/components/ClinicalHelper'
@@ -20,7 +20,10 @@ function App() {
   const [filter, setFilter] = useState('')
   const [workflowStage, setWorkflowStage] = useState<WorkflowStage>('note')
   const [mobileScreen, setMobileScreen] = useState<MobileScreen>('queue')
-  const [isHelperOpen, setIsHelperOpen] = useState(false)
+  const [isHelperOpen, setIsHelperOpen] = useState(true)
+  const [isMobileHelperOpen, setIsMobileHelperOpen] = useState(false)
+  const [queueWidth, setQueueWidth] = useState(300)
+  const [helperWidth, setHelperWidth] = useState(420)
   const [theme, setTheme] = useState<ThemeMode>(() =>
     window.localStorage.getItem('bloom-theme') === 'light' ? 'light' : 'dark',
   )
@@ -51,6 +54,32 @@ function App() {
     setWorkflowStage('note')
     setMobileScreen('task')
     setAgentError(null)
+  }
+
+  function resizePanel(event: ReactPointerEvent<HTMLButtonElement>, side: 'left' | 'right') {
+    event.preventDefault()
+    const startX = event.clientX
+    const startWidth = side === 'left' ? queueWidth : helperWidth
+    const min = side === 'left' ? 240 : 300
+    const max = side === 'left' ? 420 : 560
+
+    function handleMove(moveEvent: PointerEvent) {
+      const delta = moveEvent.clientX - startX
+      const next = startWidth + (side === 'left' ? delta : -delta)
+      const width = Math.min(max, Math.max(min, next))
+      if (side === 'left') setQueueWidth(width)
+      else setHelperWidth(width)
+    }
+
+    function handleUp() {
+      document.body.classList.remove('is-resizing')
+      window.removeEventListener('pointermove', handleMove)
+      window.removeEventListener('pointerup', handleUp)
+    }
+
+    document.body.classList.add('is-resizing')
+    window.addEventListener('pointermove', handleMove)
+    window.addEventListener('pointerup', handleUp)
   }
 
   function saveNote() {
@@ -108,6 +137,7 @@ function App() {
 
   const workspace = (
     <ClinicalTaskWorkspace
+      key={selectedConsult.id}
       consult={selectedConsult}
       isMobile={isMobile}
       noteDraft={noteDrafts[selectedConsult.id] ?? selectedConsult.note}
@@ -133,7 +163,7 @@ function App() {
       }}
       onSave={saveNote}
       onStageChange={setWorkflowStage}
-      onOpenHelper={() => setIsHelperOpen(true)}
+      onOpenHelper={() => isMobile ? setIsMobileHelperOpen(true) : setIsHelperOpen(true)}
       onComplete={() => {
         setConsults((current) => current.map((consult) => consult.id === selectedConsult.id ? { ...consult, status: 'Completed' } : consult))
         setWorkflowStage('note')
@@ -150,28 +180,27 @@ function App() {
           consult={selectedConsult}
           error={agentError}
           isMobile
-          open={isHelperOpen}
+          open={isMobileHelperOpen}
           runningAction={agentRun}
-          onOpenChange={setIsHelperOpen}
+          onOpenChange={setIsMobileHelperOpen}
           onRequestAction={requestAgentAction}
         />
       </div>
     )
   }
 
+  const desktopStyle = { '--queue-width': `${queueWidth}px`, '--helper-width': `${helperWidth}px` } as CSSProperties
+
   return (
-    <div className={`bloom-desktop-shell ${isHelperOpen ? 'helper-open' : 'helper-closed'}`}>
+    <div className={`bloom-desktop-shell ${isHelperOpen ? 'helper-open' : 'helper-closed'}`} style={desktopStyle} data-ui-variant="v3">
       {queue}
+      <button className="panel-resizer queue-resizer" onPointerDown={(event) => resizePanel(event, 'left')} type="button" aria-label="Resize patient queue"><GripVertical /></button>
       {workspace}
       {isHelperOpen ? (
-        <ClinicalHelper
-          consult={selectedConsult}
-          error={agentError}
-          open
-          runningAction={agentRun}
-          onOpenChange={setIsHelperOpen}
-          onRequestAction={requestAgentAction}
-        />
+        <>
+          <button className="panel-resizer helper-resizer" onPointerDown={(event) => resizePanel(event, 'right')} type="button" aria-label="Resize right sidebar"><GripVertical /></button>
+          <ClinicalHelper consult={selectedConsult} error={agentError} open runningAction={agentRun} onOpenChange={setIsHelperOpen} onRequestAction={requestAgentAction} onOpenPrescription={() => setWorkflowStage('photon')} />
+        </>
       ) : (
         <Button
           className="helper-rail-toggle"
