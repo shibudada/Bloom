@@ -188,7 +188,7 @@ export function ClinicalTaskWorkspace({
                   <div className="request-heading-copy">
                     <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={isMobile ? 2 : 1} />
                   </div>
-                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button className="bloom-primary-action" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
+                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button className="bloom-primary-action" variant="secondary" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
                 </div>
                 <div className="patient-metadata rich-patient-metadata">
                   <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
@@ -337,7 +337,6 @@ function PatientContext({ consult }: { consult: Consult }) {
       <ContextFrame title="Patient"><dl className="patient-context-details"><div><dt>Age</dt><dd>{consult.patient.age}</dd></div><div><dt>Stage</dt><dd>{consult.patient.stage}</dd></div><div><dt>Location</dt><dd>{consult.patient.location}</dd></div></dl></ContextFrame>
       <ContextFrame title="Safety"><ul>{consult.safetyFlags.map((flag) => <li key={flag}>{flag}</li>)}</ul></ContextFrame>
       <ContextFrame title="Active Meds"><ul>{consult.ehrMedications.filter((medication) => medication.status !== 'Stopped').slice(0, 3).map((medication) => <li key={medication.name}>{medication.name}</li>)}</ul></ContextFrame>
-      <ContextFrame title="Recent Labs"><ul>{consult.labs.slice(0, 3).map((lab) => <li key={lab.name}>{lab.name}: {lab.value}</li>)}</ul></ContextFrame>
     </section>
   )
 }

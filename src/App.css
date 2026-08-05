@@ -81,9 +81,6 @@ body.is-resizing { cursor: col-resize; user-select: none; }
 .request-heading-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: start; }
 .request-heading-copy { min-width: 0; }
 .request-heading-actions { display: inline-flex; align-items: center; gap: 8px; }
-.request-heading-actions [data-slot=button] { min-width: 58px; }
-.request-heading-actions .bloom-primary-action { min-width: 118px; border-width: 0 !important; box-shadow: none !important; }
-.request-heading-actions .bloom-primary-action::before { display: none; }
 .request-task-canvas { padding-top: 18px; padding-bottom: 28px; }
 .clinical-tabs { gap: 20px; }
 .note-editor-block { padding-top: 0; }
@@ -126,7 +123,7 @@ body.is-resizing { cursor: col-resize; user-select: none; }
 .desktop-patient-context [data-slot=tabs-list] { width: 100%; height: 40px; justify-content: flex-start; padding: 0 16px; background: transparent; border: 0; border-radius: 0; }
 .desktop-patient-context [data-slot=tabs-tab] { padding-inline: 10px; font-size: 12px; }
 .desktop-patient-context [data-slot=tabs-content] { min-height: 0; overflow: auto; }
-.desktop-patient-context .patient-context-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.desktop-patient-context .patient-context-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .desktop-patient-context .patient-context-grid > [data-slot=frame] { min-height: 0; }
 .desktop-patient-context .patient-context-grid p, .desktop-patient-context .patient-context-grid li { font-size: 11px; }
 .context-timeline { display: grid; padding: 8px 18px 20px; }
