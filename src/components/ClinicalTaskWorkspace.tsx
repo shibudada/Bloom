@@ -1,4 +1,4 @@
-import { ArrowLeft, Bold, Check, FileText, GripHorizontal, Italic, Link, MessageSquareText, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pill, Save, Sparkles, Underline, Undo2 } from 'lucide-react'
+import { ArrowLeft, Bold, Check, ChevronLeft, ChevronRight, FileText, GripHorizontal, Italic, Link, MessageSquareText, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pill, Save, Sparkles, Underline, Undo2 } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 
 import { PhotonPrescription } from '@/components/PhotonPrescription'
@@ -59,11 +59,40 @@ export function ClinicalTaskWorkspace({
   const [completionState, setCompletionState] = useState<'idle' | 'loading' | 'complete'>('idle')
   const noteEditorRef = useRef<HTMLTextAreaElement>(null)
   const noteHistoryRef = useRef<string[]>([])
+  const workspaceNavRef = useRef<HTMLElement>(null)
+  const [canScrollWorkspaceLeft, setCanScrollWorkspaceLeft] = useState(false)
+  const [canScrollWorkspaceRight, setCanScrollWorkspaceRight] = useState(false)
   const stageLabel = stage === 'note' ? 'Note' : stage === 'photon' ? 'Prescribe' : 'Review AVS'
   const genderMarker = consult.patient.pronouns.toLowerCase().includes('she') ? 'F' : consult.patient.pronouns.toLowerCase().includes('he') ? 'M' : ''
   const uterusStatus = getUterusStatus(consult)
 
   useEffect(() => { noteHistoryRef.current = [] }, [consult.id])
+
+  useEffect(() => {
+    const navigation = workspaceNavRef.current
+    if (!navigation) return
+
+    function updateOverflowControls() {
+      if (!navigation) return
+      setCanScrollWorkspaceLeft(navigation.scrollLeft > 1)
+      setCanScrollWorkspaceRight(navigation.scrollLeft + navigation.clientWidth < navigation.scrollWidth - 1)
+    }
+
+    updateOverflowControls()
+    navigation.addEventListener('scroll', updateOverflowControls, { passive: true })
+    const observer = new ResizeObserver(updateOverflowControls)
+    observer.observe(navigation)
+    return () => {
+      navigation.removeEventListener('scroll', updateOverflowControls)
+      observer.disconnect()
+    }
+  }, [isMobile])
+
+  function scrollWorkspaceNavigation(direction: -1 | 1) {
+    const navigation = workspaceNavRef.current
+    if (!navigation) return
+    navigation.scrollBy({ left: direction * Math.max(140, navigation.clientWidth * 0.65), behavior: 'smooth' })
+  }
 
   function resizeContext(event: ReactPointerEvent<HTMLButtonElement>) {
     event.preventDefault()
@@ -138,7 +167,15 @@ export function ClinicalTaskWorkspace({
           ) : <Button variant="ghost" size="icon-sm" onClick={onToggleQueue} aria-label={queueOpen ? 'Hide patient queue' : 'Show patient queue'}>{queueOpen ? <PanelLeftClose /> : <PanelLeftOpen />}</Button>}
           <div><strong>{consult.patient.name}</strong>{isMobile ? <span>{stageLabel}</span> : null}</div>
         </div>
-        {!isMobile ? <nav className="workspace-section-tabs" aria-label="Patient workspace sections">{workspaceSections.map((section) => <Button variant="ghost" size="xs" key={section} data-selected={workspaceSection === section || undefined} onClick={() => setWorkspaceSection(section)}>{section}</Button>)}</nav> : null}
+        {!isMobile ? (
+          <div className="workspace-section-navigation">
+            <Button className="workspace-scroll-control" data-visible={canScrollWorkspaceLeft || undefined} variant="ghost" size="icon-xs" onClick={() => scrollWorkspaceNavigation(-1)} aria-label="Scroll patient sections left"><ChevronLeft aria-hidden="true" /></Button>
+            <nav ref={workspaceNavRef} className="workspace-section-tabs" aria-label="Patient workspace sections">
+              {workspaceSections.map((section) => <Button variant="ghost" size="xs" key={section} data-selected={workspaceSection === section || undefined} onClick={(event) => { setWorkspaceSection(section); event.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }) }}>{section}</Button>)}
+            </nav>
+            <Button className="workspace-scroll-control" data-visible={canScrollWorkspaceRight || undefined} variant="ghost" size="icon-xs" onClick={() => scrollWorkspaceNavigation(1)} aria-label="Scroll patient sections right"><ChevronRight aria-hidden="true" /></Button>
+          </div>
+        ) : null}
         {isMobile ? <div className="mobile-topbar-actions"><Badge variant={consult.priority === 'Urgent' ? 'error' : 'secondary'}>{consult.priority}</Badge><Button variant="ghost" size="icon-sm" onClick={() => setOptionsOpen(true)} aria-label="Task options"><MoreHorizontal /></Button></div> : <Badge variant={consult.priority === 'Urgent' ? 'error' : 'secondary'}>{consult.priority}</Badge>}
       </header>
 
@@ -150,11 +187,11 @@ export function ClinicalTaskWorkspace({
                 <div className="request-heading-row">
                   <div className="request-heading-copy">
                     <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={isMobile ? 2 : 1} />
-                    <div className="patient-metadata rich-patient-metadata">
-                      <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
-                    </div>
                   </div>
                   {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button className="bloom-primary-action" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
+                </div>
+                <div className="patient-metadata rich-patient-metadata">
+                  <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
                 </div>
               </section>
               <section className={isMobile ? 'note-editor-block mobile-note-editor' : 'note-editor-block'}>
