@@ -188,7 +188,7 @@ export function ClinicalTaskWorkspace({
                   <div className="request-heading-copy">
                     <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={isMobile ? 2 : 1} />
                   </div>
-                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button className="bloom-primary-action" variant="secondary" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
+                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button variant="outline" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
                 </div>
                 <div className="patient-metadata rich-patient-metadata">
                   <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
