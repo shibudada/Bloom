@@ -1,5 +1,5 @@
-import { ArrowLeft, Check, FileText, GripHorizontal, MessageSquareText, MoreHorizontal, Pill, Save, Sparkles } from 'lucide-react'
-import { useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import { ArrowLeft, Bold, Check, FileText, GripHorizontal, Italic, MessageSquareText, MoreHorizontal, Pill, Save, Sparkles, Underline } from 'lucide-react'
+import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 
 import { PhotonPrescription } from '@/components/PhotonPrescription'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetDescription, SheetHeader, SheetPanel, SheetPopup, SheetTitle } from '@/components/ui/sheet'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { Toolbar, ToolbarButton, ToolbarGroup } from '@/components/ui/toolbar'
 import type { Consult } from '@/types'
 
 export type WorkflowStage = 'note' | 'review' | 'photon'
@@ -50,6 +51,7 @@ export function ClinicalTaskWorkspace({
   const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>('Request')
   const [contextSection, setContextSection] = useState<ContextSection>('Snapshot')
   const [contextHeight, setContextHeight] = useState(230)
+  const noteEditorRef = useRef<HTMLTextAreaElement>(null)
   const stageLabel = stage === 'note' ? 'Note' : stage === 'photon' ? 'Prescribe' : 'Review AVS'
   const genderMarker = consult.patient.pronouns.toLowerCase().includes('she') ? 'F' : consult.patient.pronouns.toLowerCase().includes('he') ? 'M' : ''
   const uterusStatus = getUterusStatus(consult)
@@ -65,6 +67,20 @@ export function ClinicalTaskWorkspace({
     window.addEventListener('pointerup', handleUp)
   }
 
+  function formatNote(prefix: string, suffix = prefix) {
+    const editor = noteEditorRef.current
+    if (!editor) return
+    const start = editor.selectionStart
+    const end = editor.selectionEnd
+    const selection = noteDraft.slice(start, end)
+    const replacement = `${prefix}${selection}${suffix}`
+    onNoteChange(`${noteDraft.slice(0, start)}${replacement}${noteDraft.slice(end)}`)
+    window.requestAnimationFrame(() => {
+      editor.focus()
+      editor.setSelectionRange(start + prefix.length, start + prefix.length + selection.length)
+    })
+  }
+
   return (
     <main className="clinical-workspace">
       <header className="clinical-topbar">
@@ -72,7 +88,7 @@ export function ClinicalTaskWorkspace({
           {isMobile ? (
             <Button variant="ghost" size="icon-sm" onClick={onBackToQueue} aria-label="Back to patient queue"><ArrowLeft /></Button>
           ) : null}
-          <div><strong>{consult.patient.name}</strong><span>{isMobile ? stageLabel : `${consult.patient.age} · ${consult.patient.stage}`}</span></div>
+          <div><strong>{consult.patient.name}</strong>{isMobile ? <span>{stageLabel}</span> : null}</div>
         </div>
         {!isMobile ? <nav className="workspace-section-tabs" aria-label="Patient workspace sections">{workspaceSections.map((section) => <button type="button" key={section} data-selected={workspaceSection === section || undefined} onClick={() => setWorkspaceSection(section)}>{section}</button>)}</nav> : null}
         {isMobile ? <div className="mobile-topbar-actions"><Badge variant={consult.priority === 'Urgent' ? 'error' : 'secondary'}>{consult.priority}</Badge><Button variant="ghost" size="icon-sm" onClick={() => setOptionsOpen(true)} aria-label="Task options"><MoreHorizontal /></Button></div> : <Badge variant={consult.priority === 'Urgent' ? 'error' : 'secondary'}>{consult.priority}</Badge>}
@@ -83,14 +99,22 @@ export function ClinicalTaskWorkspace({
           <ScrollArea className="task-scroll" scrollFade>
             <div className="task-canvas request-task-canvas">
               <section className="task-title-block compact-request-heading">
-                <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={2} />
+                <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={isMobile ? 2 : 1} />
                 <div className="patient-metadata rich-patient-metadata">
                   <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
                 </div>
               </section>
               <section className={isMobile ? 'note-editor-block mobile-note-editor' : 'note-editor-block'}>
-                <div className="section-row"><div><h2>Clinical note</h2>{!isMobile ? <p>AI-drafted content remains directly editable.</p> : null}</div>{saved ? <span className="saved-state"><Check /> Saved</span> : null}</div>
-                <Textarea value={noteDraft} onChange={(event) => onNoteChange(event.target.value)} aria-label="Clinical note" className="clinical-note-editor" />
+                <Toolbar className="clinical-format-toolbar" aria-label="Note formatting">
+                  <ToolbarGroup>
+                    <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={() => formatNote('**')} aria-label="Bold"><Bold /></ToolbarButton>
+                    <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={() => formatNote('_')} aria-label="Italic"><Italic /></ToolbarButton>
+                    <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={() => formatNote('<u>', '</u>')} aria-label="Underline"><Underline /></ToolbarButton>
+                  </ToolbarGroup>
+                  <span className="format-toolbar-spacer" />
+                  {saved ? <span className="saved-state"><Check /> Saved</span> : null}
+                </Toolbar>
+                <Textarea ref={noteEditorRef} value={noteDraft} onChange={(event) => onNoteChange(event.target.value)} aria-label="Clinical note" className="clinical-note-editor" />
               </section>
             </div>
           </ScrollArea>
@@ -106,7 +130,7 @@ export function ClinicalTaskWorkspace({
       {stage !== 'photon' && workspaceSection === 'Request' ? <footer className="task-action-bar">
         {stage === 'note' ? (
           <>
-            {!isMobile ? <><Button variant="ghost" onClick={onOpenHelper}><Sparkles /> Ask helper</Button><span className="action-spacer" /><Button variant="outline" onClick={onSave}><Save /> Save note</Button></> : null}
+            {!isMobile ? <><span className="action-spacer" /><Button variant="outline" onClick={onSave}><Save /> Save note</Button></> : null}
             <Button className="bloom-primary-action" onClick={() => { onSave(); onStageChange('photon') }}><Pill /> Continue to prescribe</Button>
           </>
         ) : null}
@@ -177,7 +201,7 @@ function DesktopPatientContext({ consult, activeSection, onSectionChange }: { co
   return (
     <section className="desktop-patient-context" aria-label="Patient context">
       <Tabs value={activeSection} onValueChange={(value) => onSectionChange(value as ContextSection)}>
-        <TabsList aria-label="Patient context sections"><TabsTab value="Snapshot">Snapshot</TabsTab><TabsTab value="Timeline">Timeline</TabsTab><TabsTab value="Notes">Notes</TabsTab></TabsList>
+        <TabsList variant="underline" aria-label="Patient context sections"><TabsTab value="Snapshot">Snapshot</TabsTab><TabsTab value="Timeline">Timeline</TabsTab><TabsTab value="Notes">Notes</TabsTab></TabsList>
         <TabsPanel value="Snapshot"><PatientContext consult={consult} /></TabsPanel>
         <TabsPanel value="Timeline"><div className="context-timeline">{consult.timeline.map((event) => <article key={event.id}><time>{event.time}</time><div><strong>{event.title}</strong><p>{event.detail}</p></div></article>)}</div></TabsPanel>
         <TabsPanel value="Notes"><div className="context-notes"><span className="section-kicker">Internal notes</span><p>{consult.internalNotes}</p></div></TabsPanel>

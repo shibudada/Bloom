@@ -48,7 +48,7 @@ export function ClinicalHelper({
   return (
     <aside className="clinical-helper" aria-label="Clinical utility sidebar">
       <Tabs value={desktopTab} onValueChange={(value) => setDesktopTab(value as typeof desktopTab)} className="utility-tabs">
-        <TabsList aria-label="Clinical utility sections">
+        <TabsList variant="underline" aria-label="Clinical utility sections">
           <TabsTab value="copilot">Copilot</TabsTab>
           <TabsTab value="chat">Chat history</TabsTab>
           <TabsTab value="prescription">Prescription console</TabsTab>
