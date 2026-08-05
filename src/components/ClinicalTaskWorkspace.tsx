@@ -1,9 +1,10 @@
-import { ArrowLeft, Bold, Check, FileText, GripHorizontal, Italic, MessageSquareText, MoreHorizontal, Pill, Save, Sparkles, Underline } from 'lucide-react'
-import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import { ArrowLeft, Bold, Check, FileText, GripHorizontal, Italic, Link, MessageSquareText, MoreHorizontal, Pill, Save, Sparkles, Underline, Undo2 } from 'lucide-react'
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 
 import { PhotonPrescription } from '@/components/PhotonPrescription'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Frame, FrameHeader, FramePanel, FrameTitle } from '@/components/ui/frame'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetDescription, SheetHeader, SheetPanel, SheetPopup, SheetTitle } from '@/components/ui/sheet'
@@ -52,9 +53,12 @@ export function ClinicalTaskWorkspace({
   const [contextSection, setContextSection] = useState<ContextSection>('Snapshot')
   const [contextHeight, setContextHeight] = useState(230)
   const noteEditorRef = useRef<HTMLTextAreaElement>(null)
+  const noteHistoryRef = useRef<string[]>([])
   const stageLabel = stage === 'note' ? 'Note' : stage === 'photon' ? 'Prescribe' : 'Review AVS'
   const genderMarker = consult.patient.pronouns.toLowerCase().includes('she') ? 'F' : consult.patient.pronouns.toLowerCase().includes('he') ? 'M' : ''
   const uterusStatus = getUterusStatus(consult)
+
+  useEffect(() => { noteHistoryRef.current = [] }, [consult.id])
 
   function resizeContext(event: ReactPointerEvent<HTMLButtonElement>) {
     event.preventDefault()
@@ -74,11 +78,40 @@ export function ClinicalTaskWorkspace({
     const end = editor.selectionEnd
     const selection = noteDraft.slice(start, end)
     const replacement = `${prefix}${selection}${suffix}`
-    onNoteChange(`${noteDraft.slice(0, start)}${replacement}${noteDraft.slice(end)}`)
+    updateNote(`${noteDraft.slice(0, start)}${replacement}${noteDraft.slice(end)}`)
     window.requestAnimationFrame(() => {
       editor.focus()
       editor.setSelectionRange(start + prefix.length, start + prefix.length + selection.length)
     })
+  }
+
+  function updateNote(value: string) {
+    if (value === noteDraft) return
+    if (noteHistoryRef.current.at(-1) !== noteDraft) noteHistoryRef.current.push(noteDraft)
+    noteHistoryRef.current = noteHistoryRef.current.slice(-50)
+    onNoteChange(value)
+  }
+
+  function addLink() {
+    const editor = noteEditorRef.current
+    if (!editor) return
+    const start = editor.selectionStart
+    const end = editor.selectionEnd
+    const selection = noteDraft.slice(start, end) || 'link text'
+    const replacement = `[${selection}](https://)`
+    updateNote(`${noteDraft.slice(0, start)}${replacement}${noteDraft.slice(end)}`)
+    window.requestAnimationFrame(() => {
+      editor.focus()
+      const urlStart = start + selection.length + 3
+      editor.setSelectionRange(urlStart, urlStart + 8)
+    })
+  }
+
+  function undoNote() {
+    const previous = noteHistoryRef.current.pop()
+    if (previous === undefined) return
+    onNoteChange(previous)
+    window.requestAnimationFrame(() => noteEditorRef.current?.focus())
   }
 
   return (
@@ -90,7 +123,7 @@ export function ClinicalTaskWorkspace({
           ) : null}
           <div><strong>{consult.patient.name}</strong>{isMobile ? <span>{stageLabel}</span> : null}</div>
         </div>
-        {!isMobile ? <nav className="workspace-section-tabs" aria-label="Patient workspace sections">{workspaceSections.map((section) => <button type="button" key={section} data-selected={workspaceSection === section || undefined} onClick={() => setWorkspaceSection(section)}>{section}</button>)}</nav> : null}
+        {!isMobile ? <nav className="workspace-section-tabs" aria-label="Patient workspace sections">{workspaceSections.map((section) => <Button variant="ghost" size="xs" key={section} data-selected={workspaceSection === section || undefined} onClick={() => setWorkspaceSection(section)}>{section}</Button>)}</nav> : null}
         {isMobile ? <div className="mobile-topbar-actions"><Badge variant={consult.priority === 'Urgent' ? 'error' : 'secondary'}>{consult.priority}</Badge><Button variant="ghost" size="icon-sm" onClick={() => setOptionsOpen(true)} aria-label="Task options"><MoreHorizontal /></Button></div> : <Badge variant={consult.priority === 'Urgent' ? 'error' : 'secondary'}>{consult.priority}</Badge>}
       </header>
 
@@ -110,11 +143,13 @@ export function ClinicalTaskWorkspace({
                     <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={() => formatNote('**')} aria-label="Bold"><Bold /></ToolbarButton>
                     <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={() => formatNote('_')} aria-label="Italic"><Italic /></ToolbarButton>
                     <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={() => formatNote('<u>', '</u>')} aria-label="Underline"><Underline /></ToolbarButton>
+                    <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={addLink} aria-label="Add link"><Link /></ToolbarButton>
+                    <ToolbarButton render={<Button variant="ghost" size="icon-sm" />} onClick={undoNote} disabled={noteHistoryRef.current.length === 0} aria-label="Undo"><Undo2 /></ToolbarButton>
                   </ToolbarGroup>
                   <span className="format-toolbar-spacer" />
                   {saved ? <span className="saved-state"><Check /> Saved</span> : null}
                 </Toolbar>
-                <Textarea ref={noteEditorRef} value={noteDraft} onChange={(event) => onNoteChange(event.target.value)} aria-label="Clinical note" className="clinical-note-editor" />
+                <Textarea ref={noteEditorRef} value={noteDraft} onChange={(event) => updateNote(event.target.value)} aria-label="Clinical note" className="clinical-note-editor" />
               </section>
             </div>
           </ScrollArea>
@@ -242,10 +277,19 @@ function getUterusStatus(consult: Consult) {
 function PatientContext({ consult }: { consult: Consult }) {
   return (
     <section className="patient-context-grid">
-      <div><span className="section-kicker">Summary</span><p>{consult.summary}</p></div>
-      <div><span className="section-kicker">Safety review</span><ul>{consult.safetyFlags.map((flag) => <li key={flag}>{flag}</li>)}</ul></div>
-      <div><span className="section-kicker">Active medications</span><ul>{consult.ehrMedications.slice(0, 4).map((medication) => <li key={medication.name}>{medication.name}</li>)}</ul></div>
-      <div><span className="section-kicker">Recent labs</span><ul>{consult.labs.slice(0, 4).map((lab) => <li key={lab.name}>{lab.name}: {lab.value}</li>)}</ul></div>
+      <ContextFrame title="Summary"><p>{consult.summary}</p></ContextFrame>
+      <ContextFrame title="Safety review"><ul>{consult.safetyFlags.map((flag) => <li key={flag}>{flag}</li>)}</ul></ContextFrame>
+      <ContextFrame title="Active medications"><ul>{consult.ehrMedications.slice(0, 4).map((medication) => <li key={medication.name}>{medication.name}</li>)}</ul></ContextFrame>
+      <ContextFrame title="Recent labs"><ul>{consult.labs.slice(0, 4).map((lab) => <li key={lab.name}>{lab.name}: {lab.value}</li>)}</ul></ContextFrame>
     </section>
+  )
+}
+
+function ContextFrame({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <Frame className="context-frame">
+      <FrameHeader><FrameTitle>{title}</FrameTitle></FrameHeader>
+      <FramePanel>{children}</FramePanel>
+    </Frame>
   )
 }
