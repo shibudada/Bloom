@@ -1,4 +1,4 @@
-import { ArrowLeft, Bold, Check, FileText, GripHorizontal, Italic, Link, MessageSquareText, MoreHorizontal, Pill, Save, Sparkles, Underline, Undo2 } from 'lucide-react'
+import { ArrowLeft, Bold, Check, FileText, GripHorizontal, Italic, Link, MessageSquareText, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pill, Save, Sparkles, Underline, Undo2 } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 
 import { PhotonPrescription } from '@/components/PhotonPrescription'
@@ -25,7 +25,9 @@ export function ClinicalTaskWorkspace({
   titleDraft,
   stage,
   saved,
+  queueOpen,
   onBackToQueue,
+  onToggleQueue,
   onNoteChange,
   onTitleChange,
   onSave,
@@ -39,7 +41,9 @@ export function ClinicalTaskWorkspace({
   titleDraft: string
   stage: WorkflowStage
   saved: boolean
+  queueOpen: boolean
   onBackToQueue: () => void
+  onToggleQueue: () => void
   onNoteChange: (value: string) => void
   onTitleChange: (value: string) => void
   onSave: () => void
@@ -52,6 +56,7 @@ export function ClinicalTaskWorkspace({
   const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>('Request')
   const [contextSection, setContextSection] = useState<ContextSection>('Snapshot')
   const [contextHeight, setContextHeight] = useState(230)
+  const [completionState, setCompletionState] = useState<'idle' | 'loading' | 'complete'>('idle')
   const noteEditorRef = useRef<HTMLTextAreaElement>(null)
   const noteHistoryRef = useRef<string[]>([])
   const stageLabel = stage === 'note' ? 'Note' : stage === 'photon' ? 'Prescribe' : 'Review AVS'
@@ -114,13 +119,23 @@ export function ClinicalTaskWorkspace({
     window.requestAnimationFrame(() => noteEditorRef.current?.focus())
   }
 
+  function saveAndComplete() {
+    if (completionState !== 'idle') return
+    setCompletionState('loading')
+    onSave()
+    window.setTimeout(() => {
+      onComplete()
+      setCompletionState('complete')
+    }, 800)
+  }
+
   return (
     <main className="clinical-workspace">
       <header className="clinical-topbar">
         <div className="clinical-topbar-leading">
           {isMobile ? (
             <Button variant="ghost" size="icon-sm" onClick={onBackToQueue} aria-label="Back to patient queue"><ArrowLeft /></Button>
-          ) : null}
+          ) : <Button variant="ghost" size="icon-sm" onClick={onToggleQueue} aria-label={queueOpen ? 'Hide patient queue' : 'Show patient queue'}>{queueOpen ? <PanelLeftClose /> : <PanelLeftOpen />}</Button>}
           <div><strong>{consult.patient.name}</strong>{isMobile ? <span>{stageLabel}</span> : null}</div>
         </div>
         {!isMobile ? <nav className="workspace-section-tabs" aria-label="Patient workspace sections">{workspaceSections.map((section) => <Button variant="ghost" size="xs" key={section} data-selected={workspaceSection === section || undefined} onClick={() => setWorkspaceSection(section)}>{section}</Button>)}</nav> : null}
@@ -132,9 +147,14 @@ export function ClinicalTaskWorkspace({
           <ScrollArea className="task-scroll" scrollFade>
             <div className="task-canvas request-task-canvas">
               <section className="task-title-block compact-request-heading">
-                <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={isMobile ? 2 : 1} />
-                <div className="patient-metadata rich-patient-metadata">
-                  <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
+                <div className="request-heading-row">
+                  <div className="request-heading-copy">
+                    <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={isMobile ? 2 : 1} />
+                    <div className="patient-metadata rich-patient-metadata">
+                      <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
+                    </div>
+                  </div>
+                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" onClick={onSave}>Save</Button><Button className="bloom-primary-action" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check /> Completed</> : 'Save and Complete'}</Button></div> : null}
                 </div>
               </section>
               <section className={isMobile ? 'note-editor-block mobile-note-editor' : 'note-editor-block'}>
@@ -162,7 +182,7 @@ export function ClinicalTaskWorkspace({
       {stage === 'review' ? <ArtifactReview consult={consult} noteDraft={noteDraft} /> : null}
       {stage === 'photon' ? <PhotonPrescription consult={consult} onReviewAvs={() => onStageChange('review')} /> : null}
 
-      {stage !== 'photon' && workspaceSection === 'Request' ? <footer className="task-action-bar">
+      {isMobile && stage !== 'photon' && workspaceSection === 'Request' ? <footer className="task-action-bar">
         {stage === 'note' ? (
           <>
             {!isMobile ? <><span className="action-spacer" /><Button variant="outline" onClick={onSave}><Save /> Save note</Button></> : null}
@@ -277,10 +297,10 @@ function getUterusStatus(consult: Consult) {
 function PatientContext({ consult }: { consult: Consult }) {
   return (
     <section className="patient-context-grid">
-      <ContextFrame title="Summary"><p>{consult.summary}</p></ContextFrame>
-      <ContextFrame title="Safety review"><ul>{consult.safetyFlags.map((flag) => <li key={flag}>{flag}</li>)}</ul></ContextFrame>
-      <ContextFrame title="Active medications"><ul>{consult.ehrMedications.slice(0, 4).map((medication) => <li key={medication.name}>{medication.name}</li>)}</ul></ContextFrame>
-      <ContextFrame title="Recent labs"><ul>{consult.labs.slice(0, 4).map((lab) => <li key={lab.name}>{lab.name}: {lab.value}</li>)}</ul></ContextFrame>
+      <ContextFrame title="Patient"><dl className="patient-context-details"><div><dt>Age</dt><dd>{consult.patient.age}</dd></div><div><dt>Stage</dt><dd>{consult.patient.stage}</dd></div><div><dt>Location</dt><dd>{consult.patient.location}</dd></div></dl></ContextFrame>
+      <ContextFrame title="Safety"><ul>{consult.safetyFlags.map((flag) => <li key={flag}>{flag}</li>)}</ul></ContextFrame>
+      <ContextFrame title="Active Meds"><ul>{consult.ehrMedications.filter((medication) => medication.status !== 'Stopped').slice(0, 3).map((medication) => <li key={medication.name}>{medication.name}</li>)}</ul></ContextFrame>
+      <ContextFrame title="Recent Labs"><ul>{consult.labs.slice(0, 3).map((lab) => <li key={lab.name}>{lab.name}: {lab.value}</li>)}</ul></ContextFrame>
     </section>
   )
 }

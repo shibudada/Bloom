@@ -76,7 +76,7 @@ export function PatientQueue({
                   <span>{consult.requestTitle}</span>
                   <small>{consult.waiting} · {consult.patient.location}</small>
                 </span>
-                <span className="patient-row-state" title={consult.status}>
+                <span className="patient-row-state" data-completed={completed || undefined} title={consult.status}>
                   {completed ? <CheckCircle2 /> : <Clock3 />}
                 </span>
               </button>

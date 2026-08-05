@@ -20,6 +20,7 @@ function App() {
   const [filter, setFilter] = useState('')
   const [workflowStage, setWorkflowStage] = useState<WorkflowStage>('note')
   const [mobileScreen, setMobileScreen] = useState<MobileScreen>('queue')
+  const [isQueueOpen, setIsQueueOpen] = useState(true)
   const [isHelperOpen, setIsHelperOpen] = useState(true)
   const [isMobileHelperOpen, setIsMobileHelperOpen] = useState(false)
   const [queueWidth, setQueueWidth] = useState(300)
@@ -144,7 +145,9 @@ function App() {
       titleDraft={titleDrafts[selectedConsult.id] ?? selectedConsult.requestTitle}
       stage={workflowStage}
       saved={savedConsultIds.has(selectedConsult.id)}
+      queueOpen={isQueueOpen}
       onBackToQueue={() => setMobileScreen('queue')}
+      onToggleQueue={() => setIsQueueOpen((current) => !current)}
       onNoteChange={(note) => {
         setNoteDrafts((current) => ({ ...current, [selectedConsult.id]: note }))
         setSavedConsultIds((current) => {
@@ -192,9 +195,8 @@ function App() {
   const desktopStyle = { '--queue-width': `${queueWidth}px`, '--helper-width': `${helperWidth}px` } as CSSProperties
 
   return (
-    <div className={`bloom-desktop-shell ${isHelperOpen ? 'helper-open' : 'helper-closed'}`} style={desktopStyle} data-ui-variant="v3">
-      {queue}
-      <button className="panel-resizer queue-resizer" onPointerDown={(event) => resizePanel(event, 'left')} type="button" aria-label="Resize patient queue"><GripVertical /></button>
+    <div className={`bloom-desktop-shell ${isQueueOpen ? 'queue-open' : 'queue-closed'} ${isHelperOpen ? 'helper-open' : 'helper-closed'}`} style={desktopStyle} data-ui-variant="v3">
+      {isQueueOpen ? <>{queue}<button className="panel-resizer queue-resizer" onPointerDown={(event) => resizePanel(event, 'left')} type="button" aria-label="Resize patient queue"><GripVertical /></button></> : null}
       {workspace}
       {isHelperOpen ? (
         <>
