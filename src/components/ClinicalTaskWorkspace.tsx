@@ -1,4 +1,4 @@
-import { ArrowLeft, Bold, Check, ChevronLeft, ChevronRight, FileText, GripHorizontal, Italic, Link, MessageSquareText, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pill, Save, Sparkles, Underline, Undo2 } from 'lucide-react'
+import { ArrowLeft, Bold, Check, ChevronLeft, ChevronRight, FileText, GripHorizontal, Italic, Link, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pill, Save, Sparkles, Underline, Undo2 } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 
 import { PhotonPrescription } from '@/components/PhotonPrescription'
@@ -8,12 +8,11 @@ import { Frame, FrameHeader, FramePanel, FrameTitle } from '@/components/ui/fram
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetDescription, SheetHeader, SheetPanel, SheetPopup, SheetTitle } from '@/components/ui/sheet'
-import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Toolbar, ToolbarButton, ToolbarGroup } from '@/components/ui/toolbar'
 import type { Consult } from '@/types'
 
-export type WorkflowStage = 'note' | 'review' | 'photon'
+export type WorkflowStage = 'note' | 'photon'
 type WorkspaceSection = 'Request' | 'Conditions' | 'Labs' | 'Medications' | 'Notes' | 'Procedures' | 'Vitals'
 type ContextSection = 'Snapshot' | 'Timeline' | 'Notes'
 const workspaceSections: WorkspaceSection[] = ['Request', 'Conditions', 'Labs', 'Medications', 'Notes', 'Procedures', 'Vitals']
@@ -56,15 +55,19 @@ export function ClinicalTaskWorkspace({
   const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>('Request')
   const [contextSection, setContextSection] = useState<ContextSection>('Snapshot')
   const [contextHeight, setContextHeight] = useState(230)
-  const [completionState, setCompletionState] = useState<'idle' | 'loading' | 'complete'>('idle')
+  const [completion, setCompletion] = useState<{ consultId: string; status: 'idle' | 'loading' | 'complete' }>({ consultId: consult.id, status: 'idle' })
+  const [avs, setAvs] = useState<{ consultId: string; status: 'idle' | 'loading' | 'ready' | 'reviewed'; content: string }>({ consultId: consult.id, status: 'idle', content: '' })
   const noteEditorRef = useRef<HTMLTextAreaElement>(null)
   const noteHistoryRef = useRef<string[]>([])
   const workspaceNavRef = useRef<HTMLElement>(null)
   const [canScrollWorkspaceLeft, setCanScrollWorkspaceLeft] = useState(false)
   const [canScrollWorkspaceRight, setCanScrollWorkspaceRight] = useState(false)
-  const stageLabel = stage === 'note' ? 'Note' : stage === 'photon' ? 'Prescribe' : 'Review AVS'
+  const stageLabel = stage === 'note' ? 'Note' : 'Prescribe'
   const genderMarker = consult.patient.pronouns.toLowerCase().includes('she') ? 'F' : consult.patient.pronouns.toLowerCase().includes('he') ? 'M' : ''
   const uterusStatus = getUterusStatus(consult)
+  const completionState = completion.consultId === consult.id ? completion.status : 'idle'
+  const avsState = avs.consultId === consult.id ? avs.status : 'idle'
+  const avsDraft = avs.consultId === consult.id ? avs.content : ''
 
   useEffect(() => { noteHistoryRef.current = [] }, [consult.id])
 
@@ -150,12 +153,18 @@ export function ClinicalTaskWorkspace({
 
   function saveAndComplete() {
     if (completionState !== 'idle') return
-    setCompletionState('loading')
+    setCompletion({ consultId: consult.id, status: 'loading' })
     onSave()
     window.setTimeout(() => {
       onComplete()
-      setCompletionState('complete')
+      setCompletion({ consultId: consult.id, status: 'complete' })
     }, 800)
+  }
+
+  function generateAvs() {
+    if (avsState === 'loading') return
+    setAvs({ consultId: consult.id, status: 'loading', content: avsDraft })
+    window.setTimeout(() => setAvs({ consultId: consult.id, status: 'ready', content: createAvsDraft(consult, noteDraft) }), 700)
   }
 
   return (
@@ -170,7 +179,7 @@ export function ClinicalTaskWorkspace({
         {!isMobile ? (
           <div className="workspace-section-navigation">
             <Button className="workspace-scroll-control" data-visible={canScrollWorkspaceLeft || undefined} variant="ghost" size="icon-xs" onClick={() => scrollWorkspaceNavigation(-1)} aria-label="Scroll patient sections left"><ChevronLeft aria-hidden="true" /></Button>
-            <nav ref={workspaceNavRef} className="workspace-section-tabs" aria-label="Patient workspace sections">
+            <nav ref={workspaceNavRef} className="workspace-button-menu workspace-section-tabs" aria-label="Patient workspace sections">
               {workspaceSections.map((section) => <Button variant="ghost" size="xs" key={section} data-selected={workspaceSection === section || undefined} onClick={(event) => { setWorkspaceSection(section); event.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }) }}>{section}</Button>)}
             </nav>
             <Button className="workspace-scroll-control" data-visible={canScrollWorkspaceRight || undefined} variant="ghost" size="icon-xs" onClick={() => scrollWorkspaceNavigation(1)} aria-label="Scroll patient sections right"><ChevronRight aria-hidden="true" /></Button>
@@ -188,10 +197,10 @@ export function ClinicalTaskWorkspace({
                   <div className="request-heading-copy">
                     <textarea className="task-title-input" value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} aria-label="Request title" rows={isMobile ? 2 : 1} />
                   </div>
-                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button variant="outline" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
+                  {!isMobile ? <div className="request-heading-actions"><Button variant="ghost" size="xs" onClick={onSave}>Save</Button><Button className="bloom-complete-action" data-complete={completionState === 'complete' || undefined} variant="outline" size="xs" loading={completionState === 'loading'} onClick={saveAndComplete} disabled={completionState === 'complete'}>{completionState === 'complete' ? <><Check aria-hidden="true" /> Completed</> : 'Save and Complete'}</Button></div> : null}
                 </div>
                 <div className="patient-metadata rich-patient-metadata">
-                  <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant="outline">{uterusStatus}</Badge>
+                  <span>{consult.patient.age}{genderMarker}</span><span>{consult.patient.stage}</span><span>{consult.receivedAt}</span><span>{consult.patient.location}</span><Badge variant={uterusStatus === 'IUD present' ? 'info' : uterusStatus === 'Uterus surgically absent' ? 'warning' : 'outline'}>{uterusStatus}</Badge>
                 </div>
               </section>
               <section className={isMobile ? 'note-editor-block mobile-note-editor' : 'note-editor-block'}>
@@ -208,6 +217,11 @@ export function ClinicalTaskWorkspace({
                 </Toolbar>
                 <Textarea ref={noteEditorRef} value={noteDraft} onChange={(event) => updateNote(event.target.value)} aria-label="Clinical note" className="clinical-note-editor" />
               </section>
+              <section className="inline-avs-generator" aria-label="After Visit Summary generation">
+                <div><strong>After Visit Summary</strong><p>Generate patient-ready instructions from the current note.</p></div>
+                <Button variant="outline" size="xs" loading={avsState === 'loading'} onClick={generateAvs}>{avsState === 'ready' || avsState === 'reviewed' ? 'Regenerate AVS' : 'Generate AVS'}</Button>
+              </section>
+              {avsState === 'ready' || avsState === 'reviewed' ? <section className="inline-avs-editor" aria-live="polite"><Textarea size="sm" value={avsDraft} onChange={(event) => setAvs({ consultId: consult.id, status: 'ready', content: event.target.value })} aria-label="After Visit Summary editor" /><footer><span>{avsState === 'reviewed' ? 'Reviewed and ready for the patient.' : 'Edit the patient-facing summary before marking it reviewed.'}</span><Button className="bloom-complete-action" data-complete={avsState === 'reviewed' || undefined} variant="outline" size="xs" onClick={() => setAvs({ consultId: consult.id, status: 'reviewed', content: avsDraft })} disabled={avsState === 'reviewed'}>{avsState === 'reviewed' ? <><Check aria-hidden="true" /> Reviewed</> : 'Mark as reviewed'}</Button></footer></section> : null}
             </div>
           </ScrollArea>
           {!isMobile ? <><button className="context-resizer" type="button" onPointerDown={resizeContext} aria-label="Resize patient context"><GripHorizontal /></button><DesktopPatientContext consult={consult} activeSection={contextSection} onSectionChange={setContextSection} /></> : null}
@@ -216,23 +230,9 @@ export function ClinicalTaskWorkspace({
 
       {stage === 'note' && workspaceSection !== 'Request' ? <WorkspaceDataView consult={consult} section={workspaceSection} /> : null}
 
-      {stage === 'review' ? <ArtifactReview consult={consult} noteDraft={noteDraft} /> : null}
-      {stage === 'photon' ? <PhotonPrescription consult={consult} onReviewAvs={() => onStageChange('review')} /> : null}
+      {stage === 'photon' ? <PhotonPrescription consult={consult} onReturnToNote={() => onStageChange('note')} /> : null}
 
-      {isMobile && stage !== 'photon' && workspaceSection === 'Request' ? <footer className="task-action-bar">
-        {stage === 'note' ? (
-          <>
-            {!isMobile ? <><span className="action-spacer" /><Button variant="outline" onClick={onSave}><Save /> Save note</Button></> : null}
-            <Button className="bloom-primary-action" onClick={() => { onSave(); onStageChange('photon') }}><Pill /> Continue to prescribe</Button>
-          </>
-        ) : null}
-        {stage === 'review' ? (
-          <>
-            {!isMobile ? <><Button variant="ghost" onClick={() => onStageChange('photon')}><ArrowLeft /> Return to prescription</Button><span className="action-spacer" /></> : null}
-            <Button className="bloom-primary-action" onClick={onComplete}><Check /> Complete task</Button>
-          </>
-        ) : null}
-      </footer> : null}
+      {isMobile && stage === 'note' && workspaceSection === 'Request' ? <footer className="task-action-bar"><Button className="bloom-primary-action" onClick={() => { onSave(); onStageChange('photon') }}><Pill /> Continue to prescribe</Button></footer> : null}
 
       {isMobile ? <>
         <Sheet open={optionsOpen} onOpenChange={setOptionsOpen}>
@@ -259,45 +259,11 @@ export function ClinicalTaskWorkspace({
   )
 }
 
-function ArtifactReview({ consult, noteDraft }: { consult: Consult; noteDraft: string }) {
-  const firstName = consult.patient.name.split(' ')[0]
-  return (
-    <ScrollArea className="task-scroll" scrollFade>
-      <div className="task-canvas review-canvas">
-        <section className="task-title-block"><span className="section-kicker">Review patient materials</span><h1>AVS and follow-up are ready</h1><p>Confirm patient-facing language after the prescription workflow.</p></section>
-        <div className="artifact-layout">
-          <nav className="artifact-nav" aria-label="Generated artifacts">
-            <button type="button" data-selected="true"><span><FileText /> After Visit Summary</span><Badge variant="success">Ready</Badge></button>
-            <button type="button"><span><MessageSquareText /> Follow-up</span><Badge variant="success">Ready</Badge></button>
-            <button type="button"><span><Pill /> Medication summary</span><Badge variant="warning">Review</Badge></button>
-          </nav>
-          <article className="artifact-document">
-            <span className="section-kicker">After Visit Summary</span>
-            <h2>Your care plan</h2>
-            <p>{firstName}, today we reviewed {consult.requestTitle.toLowerCase()}.</p>
-            <Separator />
-            <h3>What we discussed</h3>
-            <p>{noteDraft.split('\n').filter(Boolean).slice(0, 2).join(' ') || consult.summary}</p>
-            <h3>Next steps</h3>
-            <ul>{consult.followUps.slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul>
-            <h3>When to contact us</h3>
-            <p>Message Bloom if symptoms worsen, new side effects develop, or you have questions before follow-up.</p>
-          </article>
-        </div>
-      </div>
-    </ScrollArea>
-  )
-}
-
 function DesktopPatientContext({ consult, activeSection, onSectionChange }: { consult: Consult; activeSection: ContextSection; onSectionChange: (section: ContextSection) => void }) {
   return (
     <section className="desktop-patient-context" aria-label="Patient context">
-      <Tabs value={activeSection} onValueChange={(value) => onSectionChange(value as ContextSection)}>
-        <TabsList variant="underline" aria-label="Patient context sections"><TabsTab value="Snapshot">Snapshot</TabsTab><TabsTab value="Timeline">Timeline</TabsTab><TabsTab value="Notes">Notes</TabsTab></TabsList>
-        <TabsPanel value="Snapshot"><PatientContext consult={consult} /></TabsPanel>
-        <TabsPanel value="Timeline"><div className="context-timeline">{consult.timeline.map((event) => <article key={event.id}><time>{event.time}</time><div><strong>{event.title}</strong><p>{event.detail}</p></div></article>)}</div></TabsPanel>
-        <TabsPanel value="Notes"><div className="context-notes"><span className="section-kicker">Internal notes</span><p>{consult.internalNotes}</p></div></TabsPanel>
-      </Tabs>
+      <nav className="workspace-button-menu context-section-menu" aria-label="Patient context sections">{(['Snapshot', 'Timeline', 'Notes'] as ContextSection[]).map((section) => <Button key={section} variant="ghost" size="xs" data-selected={activeSection === section || undefined} onClick={() => onSectionChange(section)}>{section}</Button>)}</nav>
+      <div className="context-panel-content">{activeSection === 'Snapshot' ? <PatientContext consult={consult} /> : activeSection === 'Timeline' ? <div className="context-timeline">{consult.timeline.map((event) => <article key={event.id}><time>{event.time}</time><div><strong>{event.title}</strong><p>{event.detail}</p></div></article>)}</div> : <div className="context-notes"><span className="section-kicker">Internal notes</span><p>{consult.internalNotes}</p></div>}</div>
     </section>
   )
 }
@@ -325,10 +291,18 @@ function WorkspaceDataView({ consult, section }: { consult: Consult; section: Ex
 }
 
 function getUterusStatus(consult: Consult) {
-  const context = [consult.summary, consult.note, consult.internalNotes, ...consult.safetyFlags].join(' ').toLowerCase()
-  if (context.includes('uterus absent') || context.includes('uterus removed') || context.includes('hysterectomy')) return 'Uterus surgically absent'
-  if (context.includes('uterus present') || context.includes('uterus intact')) return 'Uterus intact'
-  return 'Uterus status unknown'
+  const context = [consult.note, consult.summary, consult.activeProblem, consult.internalNotes, ...consult.tags, ...consult.safetyFlags, ...consult.conditions.map((condition) => condition.name), ...consult.chat.flatMap((message) => message.body)].join(' ').toLowerCase()
+  if (context.includes('iud') || context.includes('intrauterine device')) return 'IUD present'
+  const intact = context.includes('uterus present') || context.includes('uterus is present') || context.includes('still have my uterus') || context.includes('no uterus removed')
+  if (!intact && (context.includes('hysterectomy') || context.includes('surgically absent') || context.includes('uterus absent') || context.includes('uterus removed') || /\bno uterus\b/.test(context))) return 'Uterus surgically absent'
+  return 'Uterus intact'
+}
+
+function createAvsDraft(consult: Consult, noteDraft: string) {
+  const firstName = consult.patient.name.split(' ')[0]
+  const discussion = noteDraft.split('\n').map((line) => line.trim()).filter((line) => line && !['Subjective', 'Objective', 'Assessment', 'Plan'].includes(line)).slice(0, 2).join(' ')
+  const nextSteps = consult.followUps.slice(0, 3).map((item) => `- ${item}`).join('\n')
+  return `${firstName}, today we reviewed ${consult.requestTitle.toLowerCase()}.\n\nWhat we discussed\n${discussion || consult.summary}\n\nNext steps\n${nextSteps}\n\nWhen to contact us\nMessage Bloom if symptoms worsen, new side effects develop, or you have questions before follow-up.`
 }
 
 function PatientContext({ consult }: { consult: Consult }) {

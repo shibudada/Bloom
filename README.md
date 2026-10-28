@@ -22,11 +22,12 @@ Bloom is a seed-data prototype for an AI-first asynchronous menopause care chart
 ```bash
 npm install
 npm run dev
+npm run dev:http
 npm run build
 npm run lint
 ```
 
-The local development URL is usually `http://127.0.0.1:5173/`. The API stub runs on `http://127.0.0.1:8787/`.
+The default local development URL is `https://localhost:3000/` so Photon Elements can run against HTTPS. For design review in browsers that block local HTTPS certificates, use `npm run dev:http` and open `http://localhost:3000/`. Photon prescribing remains blocked in HTTP mode by design. The API stub runs on `http://127.0.0.1:8787/`.
 
 ## Copilot Agent Harness
 

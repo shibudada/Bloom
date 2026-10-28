@@ -12,11 +12,10 @@ const photonEvents = ['photon-prescriptions-created', 'photon-draft-prescription
 type PhotonConfig = { orgId: string; clientId: string; siteUrl: string; authDomain: string; authAudience: string }
 type PhotonState = { status: 'review' | 'loading' | 'ready' | 'complete' | 'blocked'; config?: PhotonConfig; patientId?: string; error?: string }
 
-export function PhotonPrescription({ consult, onReviewAvs }: { consult: Consult; onReviewAvs: () => void }) {
+export function PhotonPrescription({ consult, onReturnToNote }: { consult: Consult; onReturnToNote: () => void }) {
   const candidates = prescriptionCandidates(consult)
   const [selectedNames, setSelectedNames] = useState(() => candidates.map((medication) => medication.name))
   const [state, setState] = useState<PhotonState>({ status: 'review' })
-  const [generatingAvs, setGeneratingAvs] = useState(false)
   const selected = candidates.filter((medication) => selectedNames.includes(medication.name))
 
   const launchPhoton = useCallback(async () => {
@@ -37,12 +36,6 @@ export function PhotonPrescription({ consult, onReviewAvs }: { consult: Consult;
       setState({ status: 'blocked', error: error instanceof Error ? error.message : 'Photon setup failed.' })
     }
   }, [consult.id, consult.patient])
-
-  function generateAvs() {
-    if (generatingAvs) return
-    setGeneratingAvs(true)
-    window.setTimeout(onReviewAvs, 700)
-  }
 
   return (
     <ScrollArea className="task-scroll" scrollFade>
@@ -65,7 +58,7 @@ export function PhotonPrescription({ consult, onReviewAvs }: { consult: Consult;
         ) : null}
         {state.status === 'loading' ? <div className="photon-loading"><Loader2 className="spin" /><h2>Preparing Photon</h2><p>Syncing {consult.patient.name} and loading the prescribing workflow.</p></div> : null}
         {(state.status === 'ready' || state.status === 'complete') && state.config && state.patientId ? <PhotonEmbed consult={consult} config={state.config} patientId={state.patientId} selected={selected} onComplete={() => setState((current) => ({ ...current, status: 'complete' }))} /> : null}
-        {state.status === 'complete' ? <div className="photon-complete"><span><Check /><strong>Prescription activity received from Photon.</strong></span><Button className="bloom-primary-action" loading={generatingAvs} onClick={generateAvs}>Generate AVS</Button></div> : null}
+        {state.status === 'complete' ? <div className="photon-complete"><span><Check /><strong>Prescription activity received from Photon.</strong></span><Button variant="outline" onClick={onReturnToNote}>Return to note</Button></div> : null}
       </div>
     </ScrollArea>
   )

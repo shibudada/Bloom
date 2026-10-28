@@ -1,13 +1,14 @@
 import { AlertTriangle, FileText, Loader2, Pill, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetDescription, SheetHeader, SheetPanel, SheetPopup, SheetTitle } from '@/components/ui/sheet'
-import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import type { AgentActionType, Consult } from '@/types'
+
+const API_BASE_URL = import.meta.env.VITE_BLOOM_API_BASE_URL ?? ''
 
 export function ClinicalHelper({
   consult,
@@ -29,10 +30,32 @@ export function ClinicalHelper({
   onOpenPrescription?: () => void
 }) {
   const [prompt, setPrompt] = useState('')
-  const [desktopTab, setDesktopTab] = useState<'copilot' | 'chat' | 'prescription'>('copilot')
+  const [desktopTab, setDesktopTab] = useState<'copilot' | 'chat' | 'prescription'>('prescription')
+  const [photonConnected, setPhotonConnected] = useState(false)
   const content = (
     <HelperContent consult={consult} error={error} prompt={prompt} runningAction={runningAction} onPromptChange={setPrompt} onRequestAction={onRequestAction} />
   )
+
+  useEffect(() => {
+    if (isMobile) return
+    let active = true
+    async function refreshPhotonStatus() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/photon/mcp/oauth/status`)
+        if (!response.ok) throw new Error('Photon status unavailable')
+        const status = (await response.json()) as { enabled?: boolean; authenticated?: boolean }
+        if (active) setPhotonConnected(status.enabled !== false && status.authenticated === true)
+      } catch {
+        if (active) setPhotonConnected(false)
+      }
+    }
+    void refreshPhotonStatus()
+    window.addEventListener('focus', refreshPhotonStatus)
+    return () => {
+      active = false
+      window.removeEventListener('focus', refreshPhotonStatus)
+    }
+  }, [isMobile])
 
   if (isMobile) {
     return (
@@ -47,16 +70,14 @@ export function ClinicalHelper({
 
   return (
     <aside className="clinical-helper" aria-label="Clinical utility sidebar">
-      <Tabs value={desktopTab} onValueChange={(value) => setDesktopTab(value as typeof desktopTab)} className="utility-tabs">
-        <TabsList variant="underline" aria-label="Clinical utility sections">
-          <TabsTab value="copilot">Copilot</TabsTab>
-          <TabsTab value="chat">Chat history</TabsTab>
-          <TabsTab value="prescription">Prescription console</TabsTab>
-        </TabsList>
-        <TabsPanel value="copilot">{content}</TabsPanel>
-        <TabsPanel value="chat"><ChatHistory consult={consult} /></TabsPanel>
-        <TabsPanel value="prescription"><PrescriptionConsole consult={consult} onOpenPrescription={onOpenPrescription} /></TabsPanel>
-      </Tabs>
+      <div className="utility-tabs">
+        <nav className="workspace-button-menu utility-menu" aria-label="Clinical utility sections">
+          <Button variant="ghost" size="xs" data-selected={desktopTab === 'prescription' || undefined} onClick={() => setDesktopTab('prescription')} aria-label={`Prescribe, Photon ${photonConnected ? 'connected' : 'disconnected'}`}><span className="photon-status-dot" data-connected={photonConnected || undefined} aria-hidden="true" />Prescribe</Button>
+          <Button variant="ghost" size="xs" data-selected={desktopTab === 'chat' || undefined} onClick={() => setDesktopTab('chat')}>Chat History</Button>
+          <Button variant="ghost" size="xs" data-selected={desktopTab === 'copilot' || undefined} onClick={() => setDesktopTab('copilot')}>Copilot</Button>
+        </nav>
+        <div className="utility-panel-content">{desktopTab === 'prescription' ? <PrescriptionConsole consult={consult} onOpenPrescription={onOpenPrescription} /> : desktopTab === 'chat' ? <ChatHistory consult={consult} /> : content}</div>
+      </div>
     </aside>
   )
 }
@@ -65,7 +86,7 @@ function ChatHistory({ consult }: { consult: Consult }) {
   return (
     <ScrollArea className="utility-panel-scroll" scrollFade>
       <div className="chat-history-list">
-        {consult.chat.map((message) => <article key={message.id}><div><strong>{message.name}</strong><span>{message.time}</span></div>{message.body.map((line) => <p key={line}>{line}</p>)}</article>)}
+        {consult.chat.map((message) => <article className={`chat-message ${message.sender}`} key={message.id}><div><strong>{message.name}</strong><span>{message.time}</span></div>{message.body.map((line) => <p key={line}>{line}</p>)}</article>)}
       </div>
     </ScrollArea>
   )

@@ -416,6 +416,22 @@
         font-size: 11px;
       }
 
+      .token-values {
+        display: grid;
+        gap: 2px;
+        margin-top: var(--space-2);
+      }
+
+      .token-values code {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .token-values span {
+        color: var(--muted-quiet);
+      }
+
       .foundation-row {
         display: grid;
         gap: var(--space-8);
@@ -426,6 +442,31 @@
       .type-scale,
       .metric-list {
         border-top: 1px solid var(--border);
+      }
+
+      .font-family-list {
+        display: grid;
+        gap: var(--space-2);
+        margin: 0 0 var(--space-5);
+        padding: var(--space-4);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+      }
+
+      .font-family-row {
+        display: grid;
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: var(--space-3);
+      }
+
+      .font-family-row span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .font-family-row code {
+        overflow-wrap: anywhere;
       }
 
       .type-sample,
@@ -1355,47 +1396,129 @@
                 <div class="swatch" style="--swatch: var(--background)"></div>
                 <strong>Background</strong>
                 <code>--background</code>
+                <div class="token-values"><code><span>Dark</span>#0B0C0F</code><code><span>Light</span>#F5F6F4</code></div>
               </div>
               <div class="token">
                 <div class="swatch" style="--swatch: var(--surface)"></div>
                 <strong>Surface</strong>
                 <code>--surface</code>
+                <div class="token-values"><code><span>Dark</span>#101216</code><code><span>Light</span>#FBFCFA</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--surface-raised)"></div>
+                <strong>Raised surface</strong>
+                <code>--surface-raised</code>
+                <div class="token-values"><code><span>Dark</span>#15181D</code><code><span>Light</span>#FFFFFF</code></div>
               </div>
               <div class="token">
                 <div class="swatch" style="--swatch: var(--surface-subtle)"></div>
                 <strong>Subtle surface</strong>
                 <code>--surface-subtle</code>
+                <div class="token-values"><code><span>Dark</span>#1A1E24</code><code><span>Light</span>#EFF1ED</code></div>
               </div>
               <div class="token">
                 <div class="swatch" style="--swatch: var(--foreground)"></div>
                 <strong>Foreground</strong>
                 <code>--foreground</code>
+                <div class="token-values"><code><span>Dark</span>#F4F6F7</code><code><span>Light</span>#15181C</code></div>
               </div>
               <div class="token">
                 <div class="swatch" style="--swatch: var(--muted)"></div>
                 <strong>Muted foreground</strong>
                 <code>--muted</code>
+                <div class="token-values"><code><span>Dark</span>#A3AAB3</code><code><span>Light</span>#59616B</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--muted-quiet)"></div>
+                <strong>Quiet foreground</strong>
+                <code>--muted-quiet</code>
+                <div class="token-values"><code><span>Dark</span>#767F8A</code><code><span>Light</span>#7A838D</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--border)"></div>
+                <strong>Border</strong>
+                <code>--border</code>
+                <div class="token-values"><code><span>Dark</span>#252A32</code><code><span>Light</span>#DADDD8</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--border-strong)"></div>
+                <strong>Strong border</strong>
+                <code>--border-strong</code>
+                <div class="token-values"><code><span>Dark</span>#343B46</code><code><span>Light</span>#C9CDC7</code></div>
               </div>
               <div class="token">
                 <div class="swatch" style="--swatch: var(--accent)"></div>
                 <strong>Primary action</strong>
                 <code>--accent</code>
+                <div class="token-values"><code><span>Dark</span>#74DBA5</code><code><span>Light</span>#197A4D</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--accent-foreground)"></div>
+                <strong>Action foreground</strong>
+                <code>--accent-foreground</code>
+                <div class="token-values"><code><span>Dark</span>#07110C</code><code><span>Light</span>#FFFFFF</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--accent-soft)"></div>
+                <strong>Soft action</strong>
+                <code>--accent-soft</code>
+                <div class="token-values"><code><span>Dark</span>#11231B</code><code><span>Light</span>#E6F2EB</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--success)"></div>
+                <strong>Success</strong>
+                <code>--success</code>
+                <div class="token-values"><code><span>Dark</span>#74DBA5</code><code><span>Light</span>#197A4D</code></div>
               </div>
               <div class="token">
                 <div class="swatch" style="--swatch: var(--warning)"></div>
                 <strong>Needs attention</strong>
                 <code>--warning</code>
+                <div class="token-values"><code><span>Dark</span>#EFB449</code><code><span>Light</span>#A66600</code></div>
               </div>
               <div class="token">
                 <div class="swatch" style="--swatch: var(--destructive)"></div>
                 <strong>Destructive</strong>
                 <code>--destructive</code>
+                <div class="token-values"><code><span>Dark</span>#F47B7B</code><code><span>Light</span>#BF3F46</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--focus)"></div>
+                <strong>Focus</strong>
+                <code>--focus</code>
+                <div class="token-values"><code><span>Dark</span>#9CA9BB</code><code><span>Light</span>#596B82</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--sidebar)"></div>
+                <strong>Sidebar</strong>
+                <code>--sidebar</code>
+                <div class="token-values"><code><span>Dark</span>#0E1013</code><code><span>Light</span>#F0F1ED</code></div>
+              </div>
+              <div class="token">
+                <div class="swatch" style="--swatch: var(--sidebar-selected)"></div>
+                <strong>Selected navigation</strong>
+                <code>--sidebar-selected</code>
+                <div class="token-values"><code><span>Dark</span>#191C21</code><code><span>Light</span>#E5E7E2</code></div>
               </div>
             </div>
 
             <div class="foundation-row">
               <div>
                 <h3>Type scale</h3>
+                <div class="font-family-list" aria-label="Font families">
+                  <div class="font-family-row">
+                    <span>UI &amp; display</span>
+                    <code>Inter</code>
+                  </div>
+                  <div class="font-family-row">
+                    <span>UI fallbacks</span>
+                    <code>ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif</code>
+                  </div>
+                  <div class="font-family-row">
+                    <span>Monospace</span>
+                    <code>SFMono-Regular, Consolas, Liberation Mono, monospace</code>
+                  </div>
+                </div>
                 <div class="type-scale">
                   <div class="type-sample">
                     <code>Display / 32</code>
